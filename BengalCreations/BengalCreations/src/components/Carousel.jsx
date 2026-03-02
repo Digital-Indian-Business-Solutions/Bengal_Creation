@@ -1,0 +1,50 @@
+import { useState } from "react";
+
+
+function Carousel({ title, products, onShowProduct }) {
+  const [idx, setIdx] = useState(0);
+  const CAR_VISIBLE = 5;
+  const pages = Math.ceil(products.length / CAR_VISIBLE);
+
+  const move = (dir) => setIdx(i => (i + dir + pages) % pages);
+
+  return (
+    <div className="section alpona-bg" style={{ padding: "32px 0" }}>
+      <h2 className="section-title">{title}</h2>
+      <div className="carousel-wrapper">
+        <button className="carousel-nav prev" onClick={() => move(-1)}>‹</button>
+        <div className="carousel-track-outer">
+          <div className="carousel-track" style={{ transform: `translateX(-${idx * CAR_VISIBLE * 240}px)` }}>
+            {products.map(p => {
+              const disc = Math.round((1 - p.price / p.original) * 100);
+              return (
+                <div className="carousel-card" key={p.id} onClick={() => onShowProduct(p.id)}>
+                  <div className="carousel-card-img">
+                    {p.thumb ? <img src={p.thumb} alt={p.name} loading="lazy" /> : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 64, background: "var(--cream2)" }}>{p.emoji}</div>}
+                    {disc > 0 && <div className="product-badge">{disc}% OFF</div>}
+                  </div>
+                  <div className="carousel-card-body">
+                    <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 13, color: "var(--maroon)", fontWeight: 700, lineHeight: 1.3, marginBottom: 4, height: 36, overflow: "hidden" }}>{p.name}</div>
+                    <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6 }}>{p.vendor}</div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                      <span style={{ fontSize: 16, fontWeight: 700, color: "var(--green)" }}>₹{p.price.toLocaleString()}</span>
+                      {p.original > p.price && <span style={{ fontSize: 11, color: "var(--text-muted)", textDecoration: "line-through" }}>₹{p.original.toLocaleString()}</span>}
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--gold)", marginTop: 3 }}>{"★".repeat(Math.floor(p.rating))} {p.rating}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <button className="carousel-nav next" onClick={() => move(1)}>›</button>
+      </div>
+      <div className="carousel-dots">
+        {Array.from({ length: pages }, (_, i) => (
+          <div key={i} className="carousel-dot" style={{ width: i === idx ? 24 : 8, background: i === idx ? "var(--gold)" : "var(--border)" }} onClick={() => setIdx(i)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+export default Carousel;
