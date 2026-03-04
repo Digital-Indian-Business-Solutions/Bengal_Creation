@@ -162,11 +162,43 @@ const cloudinaryUploadArray = (fieldName, maxCount) => {
     });
   };
 };
+const cloudinarySingle = (fieldName) => {
+    return async (req, res, next) => {
+        const singleUpload = upload.single(fieldName);
+        
+        singleUpload(req, res, async (err) => {
+            if (err) {
+                return res.status(400).json({ error: err.message });
+            }
+            
+            if (!req.file) {
+                return next();
+            }
+            
+            try {
+                const result = await uploadToCloudinary(
+                    req.file.buffer,
+                    req.file.originalname,
+                    req.body.folder || fieldName
+                );
+                
+                req.cloudinaryFile = result;
+                req.file.cloudinaryUrl = result.url;
+                
+                next();
+            } catch (error) {
+                console.error("Cloudinary upload error:", error);
+                return res.status(500).json({ error: "Failed to upload to Cloudinary" });
+            }
+        });
+    };
+};
 
 module.exports = {
     upload,
     cloudinaryUpload,
     cloudinaryUploadFields,
     uploadToCloudinary,
-    cloudinaryUploadArray
+    cloudinaryUploadArray,
+    cloudinarySingle
 };
