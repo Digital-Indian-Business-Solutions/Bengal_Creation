@@ -3,17 +3,16 @@ const express = require("express");
 const router = express.Router();
 const Vendor = require("../models/vendor");
 const Product = require("../models/product");
-const {cloudinaryUpload,cloudinaryDirect} = require("../middleware/upload");
+const { cloudinaryUploadFields } = require("../middleware/upload");;
 const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
 const uploadImage = require("../middleware/cloudinary");
 const jwt = require("jsonwebtoken");
 
-// REGISTER VENDOR WITH 3 MANDATORY DOCUMENTS
-
+// REGISTER VENDOR WITH DOCUMENTS
 router.post(
   "/register",
-  cloudinaryUpload.fields([
+  cloudinaryUploadFields([
     { name: "tradeLicense", maxCount: 1 },
     { name: "aadhaarCard", maxCount: 1 },
     { name: "panCard", maxCount: 1 },
@@ -27,32 +26,16 @@ router.post(
       console.log("Cloudinary files:", req.cloudinaryFiles);
 
       // Check mandatory docs
-      if (
-        !req.files.tradeLicense ||
-        !req.files.aadhaarCard ||
-        !req.files.panCard
-      ) {
+      if (!req.cloudinaryFiles?.tradeLicense?.[0] || 
+          !req.cloudinaryFiles?.aadhaarCard?.[0] || 
+          !req.cloudinaryFiles?.panCard?.[0]) {
         return res.status(400).json({
           msg: "Trade Licence, Aadhaar, PAN are mandatory",
         });
       }
 
-      // Extract Cloudinary URLs from the uploaded files
-      // The files are now in req.cloudinaryFiles from our middleware
-      const cloudinaryFiles = req.cloudinaryFiles || {};
-      
-      // Process banner if uploaded
-      if (req.files.banner && req.files.banner[0]) {
-        // Find the corresponding Cloudinary upload result
-        const bannerFile = req.cloudinaryFiles?.banner?.[0];
-        req.body.banner = bannerFile?.secureUrl || bannerFile?.url;
-      }
-      
-      // Process logo if uploaded
-      if (req.files.logo && req.files.logo[0]) {
-        const logoFile = req.cloudinaryFiles?.logo?.[0];
-        req.body.logo = logoFile?.secureUrl || logoFile?.url;
-      }
+      // Extract Cloudinary URLs
+      const getUrl = (field) => req.cloudinaryFiles?.[field]?.[0]?.url;
 
       // Hash password
       const hashed = await bcrypt.hash(req.body.password, 10);
@@ -60,19 +43,6 @@ router.post(
       // Generate vendor ID
       const vendorId = "VEND-" + new Date().getFullYear() + 
                       uuidv4().substring(0, 6).toUpperCase();
-
-      // Prepare documents with Cloudinary URLs
-      const documents = {
-        tradeLicense: req.cloudinaryFiles?.tradeLicense?.[0]?.secureUrl || 
-                     req.files.tradeLicense[0]?.path,
-        aadhaarCard: req.cloudinaryFiles?.aadhaarCard?.[0]?.secureUrl || 
-                    req.files.aadhaarCard[0]?.path,
-        panCard: req.cloudinaryFiles?.panCard?.[0]?.secureUrl || 
-                req.files.panCard[0]?.path,
-        otherDoc: req.files.otherDoc ? 
-                  (req.cloudinaryFiles?.otherDoc?.[0]?.secureUrl || 
-                   req.files.otherDoc[0]?.path) : null,
-      };
 
       // Create vendor object
       const vendor = new Vendor({
@@ -84,18 +54,14 @@ router.post(
         phone: req.body.phone,
         address: req.body.address,
         description: req.body.description,
-        logo: req.body.logo,
-        banner: req.body.banner,
-        documents: documents,
-        // Store Cloudinary metadata if needed
-        cloudinaryMetadata: {
-          tradeLicense: req.cloudinaryFiles?.tradeLicense?.[0],
-          aadhaarCard: req.cloudinaryFiles?.aadhaarCard?.[0],
-          panCard: req.cloudinaryFiles?.panCard?.[0],
-          otherDoc: req.cloudinaryFiles?.otherDoc?.[0],
-          logo: req.cloudinaryFiles?.logo?.[0],
-          banner: req.cloudinaryFiles?.banner?.[0],
-        }
+        logo: getUrl('logo'),
+        banner: getUrl('banner'),
+        documents: {
+          tradeLicense: getUrl('tradeLicense'),
+          aadhaarCard: getUrl('aadhaarCard'),
+          panCard: getUrl('panCard'),
+          otherDoc: getUrl('otherDoc'),
+        },
       });
 
       console.log("Saving vendor...");
@@ -104,7 +70,6 @@ router.post(
       // Remove password from response
       const safeVendor = vendor.toObject();
       delete safeVendor.password;
-      delete safeVendor.cloudinaryMetadata; // Optional: remove from response
 
       res.json({ 
         msg: "Vendor Registered Successfully", 
