@@ -3,11 +3,12 @@ const router = express.Router();
 const Category = require("../models/category");
 const Vendor = require("../models/vendor");
 const Product = require("../models/product");
+const upload = require("../middleware/upload");
 const {cloudinarySingle}=require("../middleware/upload")
 
 // CREATE CATEGORY
 
-router.post("/",cloudinarySingle("image"), async (req, res) => {
+router.post("/", upload.single("image"), async (req, res) => {
     try {
 
         let imageUrl = null;
