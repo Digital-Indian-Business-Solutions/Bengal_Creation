@@ -4,10 +4,10 @@ const Product = require("../models/product");
 const Vendor = require("../models/vendor");
 const upload = require("../middleware/upload");
 const uploadImage = require("../middleware/cloudinary");
-
+const { cloudinaryUploadFields } = require("../middleware/upload");
 // CREATE PRODUCT
 
-router.post("/", uploadImage.array("images", 5), async (req, res) => {
+router.post("/", cloudinaryUploadFields.array("images", 5), async (req, res) => {
   try {
     req.body.price = parseFloat(req.body.price);
     req.body.stock = parseInt(req.body.stock);
