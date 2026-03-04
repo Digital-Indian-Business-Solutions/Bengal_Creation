@@ -4,18 +4,19 @@ const Category = require("../models/category");
 const Vendor = require("../models/vendor");
 const Product = require("../models/product");
 const upload = require("../middleware/upload");
-const {cloudinarySingle}=require("../middleware/upload")
+const {cloudinarySingle,uploadToCloudinary }=require("../middleware/upload")
 
 // CREATE CATEGORY
-
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/", cloudinarySingle("image"), async (req, res) => {
     try {
+        console.log("Creating category:", req.body);
+        console.log("Cloudinary file:", req.cloudinaryFile);
 
         let imageUrl = null;
 
-        if (req.file) {
-            const result = await uploadImage(req.file.path);
-            imageUrl = result.secure_url;
+        // Get image URL from Cloudinary (automatically uploaded by cloudinarySingle middleware)
+        if (req.cloudinaryFile) {
+            imageUrl = req.cloudinaryFile.url;
         }
 
         const category = new Category({
@@ -27,13 +28,20 @@ router.post("/", upload.single("image"), async (req, res) => {
 
         await category.save();
 
-        res.status(201).json(category);
+        res.status(201).json({
+            success: true,
+            message: "Category created successfully",
+            category
+        });
 
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("Category creation error:", err);
+        res.status(500).json({ 
+            success: false,
+            error: err.message 
+        });
     }
 });
-
 
 // GET ALL CATEGORIES
 
