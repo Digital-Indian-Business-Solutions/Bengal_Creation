@@ -83,6 +83,6 @@ const seedCategories = async () => {
 };
 seedCategories();
 // START SERVER
-app.listen(port, () => {
-  console.log(`${process.env.HOSTNAME}:${port}`);
-});
+// app.listen(port, () => {
+//   console.log(`${process.env.HOSTNAME}:${port}`);
+// });

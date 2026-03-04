@@ -24,13 +24,14 @@ function Carousel({ title, products, onShowProduct }) {
                     {disc > 0 && <div className="product-badge">{disc}% OFF</div>}
                   </div>
                   <div className="carousel-card-body">
-                    <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 13, color: "var(--maroon)", fontWeight: 700, lineHeight: 1.3, marginBottom: 4, height: 36, overflow: "hidden" }}>{p.name}</div>
-                    <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6 }}>{p.vendor}</div>
+                    <div style={{ alignSelf:"center", fontFamily: "'Playfair Display',serif", fontSize: 13, color: "var(--maroon)", fontWeight: 700, lineHeight: 1.3, marginBottom: 0, height: 20, overflow: "hidden" }}>{p.name}</div>
+                    {/* <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6 }}>{p.vendor}</div> */}
                     <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
                       <span style={{ fontSize: 16, fontWeight: 700, color: "var(--green)" }}>₹{p.price.toLocaleString()}</span>
                       {p.original > p.price && <span style={{ fontSize: 11, color: "var(--text-muted)", textDecoration: "line-through" }}>₹{p.original.toLocaleString()}</span>}
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--gold)", marginTop: 3 }}>{"★".repeat(Math.floor(p.rating))} {p.rating}</div>
+                   
+                    <div style={{ fontSize: 11, color: "var(--gold)", marginTop: 3 }}>{"★".repeat(Math.floor(p.rating))} {p.rating>0 && p.rating}</div>
                   </div>
                 </div>
               );

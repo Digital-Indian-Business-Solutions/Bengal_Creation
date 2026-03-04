@@ -373,6 +373,7 @@ h5 {
   object-fit: cover;
 }
 .carousel-card-body {
+  /* text-align: center; */
   padding: 14px;
 }
 .carousel-dots {
@@ -1671,4 +1672,34 @@ footer {
   .tile-label {
     font-size: 0.65rem;  /* Smaller text */
   }
+}
+@media (max-width: 768px) {
+  .carousel-card {
+     flex: 0 0 140px;  /* smaller width */
+  }
+
+  .carousel-card-img {
+    height: 130px;     /* smaller image height */
+  }
+
+  .carousel-card-body {
+    padding: 5px;     /* reduce padding */
+  }
+  .carousel-section {
+  padding: 12px 0;
+}
+}
+
+/* Extra small screen */
+@media (max-width: 480px) {
+  .carousel-card {
+    flex: 0 0 100px;
+  }
+
+  .carousel-card-img {
+    height: 110px;
+  }
+  .carousel-section {
+  padding: 12px 0;
+}
 }

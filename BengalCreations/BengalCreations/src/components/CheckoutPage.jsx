@@ -8,9 +8,9 @@ function CheckoutPage({ cart, onPlaceOrder }) {
   const [ordered, setOrdered] = useState(false);
   const [orderId, setOrderId] = useState("");
 
-  const subtotal = cart.reduce((s, p) => s + p.price * (p.qty || 1), 0);
+  const subtotal = cart.reduce((s, p) => s + p.price * (p.quantity || 1), 0);
   const tax = Math.round(subtotal * 0.05);
-
+ console.log(cart)
   const handlePlace = () => {
     if (!form.name || !form.phone || !form.address || !form.city || !form.pin) { alert("Please fill all required fields"); return; }
     if (!/^\d{6}$/.test(form.pin)) { alert("Please enter a valid 6-digit PIN code"); return; }
@@ -60,16 +60,18 @@ function CheckoutPage({ cart, onPlaceOrder }) {
         </div>
         <div className="order-summary">
           <h3 style={{ color: "var(--maroon)", marginBottom: 20 }}>Order Summary</h3>
-          {cart.map(p => (
-            <div key={p.id} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
+          {
+           
+            cart.map(p => (
+            <div key={p.product._id} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
               <div style={{ width: 50, height: 50, borderRadius: 8, overflow: "hidden", background: "var(--cream2)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
-                {p.thumb ? <img src={p.thumb} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt="" /> : p.emoji}
+                {p.product.images[0] ? <img src={p.product.images[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt="" /> : p.emoji}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--maroon)", lineHeight: 1.3 }}>{p.name}</div>
-                <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Qty: {p.qty || 1}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--maroon)", lineHeight: 1.3 }}>{p.product.name}</div>
+                <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Qty: {p.quantity || 1}</div>
               </div>
-              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--green)" }}>₹{(p.price * (p.qty || 1)).toLocaleString()}</div>
+              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--green)" }}>₹{(p.product.price * (p.quantity || 1)).toLocaleString()}</div>
             </div>
           ))}
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, fontSize: 14, color: "var(--text-muted)" }}><span>Subtotal</span><span>₹{subtotal.toLocaleString()}</span></div>
