@@ -16,7 +16,7 @@ const wishlistRoutes = require("./routes/wishlistRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const webhookRoutes = require("./routes/webhookRoutes");
 const {connectDB}=require("./db/db")
-const cachedDb=require("./db/db")
+// const cachedDb=require("./db/db")
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -58,17 +58,8 @@ app.use("/uploads", express.static("uploads"));
 // }
 
 // Database connection middleware
-app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (error) {
-    res.status(500).json({ 
-      success: false,
-      message: "Database connection failed",
-      error: error.message 
-    });
-  }
+connectDB().catch(err => {
+  console.error("Initial DB connection failed:", err);
 });
 
 // Routes
@@ -108,14 +99,23 @@ app.get("/", (req, res) => {
 });
 
 // Health check endpoint
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    success: true,
-    status: "OK",
-    message: "Server is running on Vercel",
-    database: cachedDb ? "Connected" : "Not connected",
-    timestamp: new Date().toISOString()
-  });
+app.get("/health", async (req, res) => {
+  try {
+    await connectDB();
+    res.status(200).json({
+      success: true,
+      status: "OK",
+      database: "Connected",
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      status: "ERROR",
+      database: "Not connected",
+      error: error.message
+    });
+  }
 });
 
 // Auto category creation function
