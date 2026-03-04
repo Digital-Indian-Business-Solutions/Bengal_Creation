@@ -7,7 +7,7 @@ const uploadImage = require("../middleware/cloudinary");
 
 // CREATE PRODUCT
 
-router.post("/", upload.array("images", 5), async (req, res) => {
+router.post("/", uploadImage.array("images", 5), async (req, res) => {
   try {
     req.body.price = parseFloat(req.body.price);
     req.body.stock = parseInt(req.body.stock);
