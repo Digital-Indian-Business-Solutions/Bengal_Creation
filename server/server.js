@@ -16,6 +16,7 @@ const wishlistRoutes = require("./routes/wishlistRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const webhookRoutes = require("./routes/webhookRoutes");
 const connectDB=require("./db/db")
+const cachedDb=require("./db/db")
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -34,7 +35,7 @@ app.use(
 app.use("/uploads", express.static("uploads"));
 
 // Database connection with caching for serverless
-let cachedDb = null;
+
 
 // async function connectToDatabase() {
 //   if (cachedDb) {
