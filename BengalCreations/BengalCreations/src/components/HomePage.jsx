@@ -54,27 +54,35 @@ function HomePage({ setFilterCategory, cart, wishlist, onAddCart, onToggleWish, 
           </div>
           <div className="footer-col">
             <h4>Explore</h4>
+            <div className="footer-dis">
             {["Handloom Sarees", "Terracotta Crafts", "Dokra Art", "Bengal Sweets", "Jute Products"].map(c => (
               <a key={c} style={{ cursor: "pointer" }} onClick={() => goToShop(c)}>{c}</a>
             ))}
+            </div>
           </div>
           <div className="footer-col">
             <h4>Company</h4>
+            <div className="footer-dis">
             <a style={{ cursor: "pointer" }} onClick={() => navigate("/about")}>About Us</a>
             <a style={{ cursor: "pointer" }} onClick={() => navigate("/contact")}>Contact</a>
             <a>Press</a>
             <a style={{ cursor: "pointer" }} onClick={() => navigate("/vendor")}>Sell With Us</a>
             <a>Careers</a>
+            </div>
           </div>
           <div className="footer-col">
             <h4>Help</h4>
+            <div className="footer-dis">
+            
             <a>Privacy Policy</a>
             <a>Terms of Service</a>
             <a>Shipping Policy</a>
             <a>Returns</a>
             <a>FAQ</a>
+            </div>
           </div>
         </div>
+
         <div className="footer-bottom">
           <span>© 2025 Digital Indian. All rights reserved. | Made with ❤️ in Bengal</span>
           <span>🇮🇳 West Bengal, India</span>

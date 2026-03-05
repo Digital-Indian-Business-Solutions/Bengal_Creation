@@ -9,7 +9,7 @@ function Carousel({ title, products, onShowProduct }) {
   const move = (dir) => setIdx(i => (i + dir + pages) % pages);
 
   return (
-    <div className="section alpona-bg" style={{ padding: "32px 0" }}>
+    <div className="section alpona-bg" >
       <h2 className="section-title">{title}</h2>
       <div className="carousel-wrapper">
         <button className="carousel-nav prev" onClick={() => move(-1)}>‹</button>

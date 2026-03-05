@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "../assets/logo.png";
+import MobileSideNav from "./MobileSideNav";
 
 function Navbar({ cart, wishlist, currentUser, openCart, onSearch, openLogin, doLogout }) {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ function Navbar({ cart, wishlist, currentUser, openCart, onSearch, openLogin, do
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const cartCount = cart.length;
-
+  const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => {
     function handler(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setShowDropdown(false);
@@ -40,6 +41,7 @@ function Navbar({ cart, wishlist, currentUser, openCart, onSearch, openLogin, do
        
         
         <div className="nav-actions">
+        
           <div style={{ position: "relative" }} ref={dropdownRef}>
             <button className="nav-btn" onClick={() => {
               if (currentUser) setShowDropdown(v => !v);
@@ -94,8 +96,15 @@ function Navbar({ cart, wishlist, currentUser, openCart, onSearch, openLogin, do
           )}
           <button className="nav-btn" onClick={() => navigate("/about")}>ℹ️ About</button>
           <button className="nav-btn" onClick={() => navigate("/contact")}>📞 Contact</button>
+          
         </div>
-        <div className="nav-search" style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", maxWidth: 400, justifyContent: "center", justifySelf: "center" }}>
+        <button 
+  className="hamburger"
+  onClick={() => setMobileOpen(true)}
+>
+  ☰
+</button>
+        <div className="nav-search" style={{ }}>
           <input
             type="text" value={search}
             placeholder="Search products, shops, crafts..."
@@ -105,6 +114,16 @@ function Navbar({ cart, wishlist, currentUser, openCart, onSearch, openLogin, do
           <button onClick={handleSearch}>🔍 Search</button>
         </div>
       </div>
+      <MobileSideNav
+  isOpen={mobileOpen}
+  onClose={() => setMobileOpen(false)}
+  cart={cart}
+  wishlist={wishlist}
+  currentUser={currentUser}
+  openCart={openCart}
+  openLogin={openLogin}
+  doLogout={doLogout}
+/>
     </nav>
   );
 }

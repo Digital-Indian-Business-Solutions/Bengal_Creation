@@ -110,6 +110,7 @@ app.get("/", (req, res) => {
 app.get("/health", async (req, res) => {
   try {
     await connectDB();
+    await seedCategories()
     res.status(200).json({
       success: true,
       status: "OK",
@@ -197,6 +198,5 @@ if (process.env.NODE_ENV !== "production") {
     console.log(`📚 API Documentation available at http://localhost:${port}`);
   });
 }
-
 // Export for Vercel
 module.exports = app;
