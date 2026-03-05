@@ -1,15 +1,39 @@
-import { useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+const API = import.meta.env.VITE_API || "http://localhost:5000/api";
+function ProductDetailPage({ cart, wishlist, onAddCart, onToggleWish, openCart, setFilterCategory, allProducts }) {
+    const [vendors,setVendors]=useState([])
+    const getAllVendors = async () => {
+    try {
+      const res = await fetch(`${API}/vendors`);
+      const data = await res.json();
 
-function ProductDetailPage({ cart, wishlist, onAddCart, onToggleWish, openCart, setFilterCategory, allProducts, vendors }) {
+      const formattedVendors = data.map((v) => ({
+        id: v._id,
+        name: v.shopName,
+        owner: v.name,
+        district: v.address,
+        rating: v.rating || 4.5,
+        products: v.products?.length || 0,
+        avatar: "🛍️",
+        category: "Handmade",
+      }));
+
+      setVendors(formattedVendors); // IMPORTANT
+      // console.log(formattedVendors);
+    } catch (err) {
+      console.error("Vendor fetch error:", err);
+    }
+  };
   const { id } = useParams();
   const navigate = useNavigate();
   const productId = id;
+
   // console.log(productId.v)
   const [imgIdx, setImgIdx] = useState(0);
   const p = allProducts.find(x => x.id === productId);
   // console.log(p, "Hey")
-
+  useEffect(()=>{getAllVendors()},[])
   useEffect(() => { setImgIdx(0); }, [productId]);
   const otherVendorProducts = allProducts.filter(
   x => x.vendorId === p.vendorId && x.id !== p.id

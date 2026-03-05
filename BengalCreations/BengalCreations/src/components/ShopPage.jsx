@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ProductCard from "./ProductCard";
-
+const API = import.meta.env.VITE_API || "http://localhost:5000/api";
 function ShopPage({
   cart,
   wishlist,
@@ -10,6 +10,7 @@ function ShopPage({
   allProducts,
   WB_DISTRICTS,
 }) {
+  
   const navigate = useNavigate();
   const location = useLocation();
   const locationState = location.state || {};
@@ -21,24 +22,21 @@ function ShopPage({
   { name: "Jute Products", emoji: "🧺" },
   { name: "Bengal Sweets", emoji: "🍬" },
   ])
-  // const getAllCategory = async () => {
-  //   try {
-  //     if(catOptions.length>0){
-  //       setCatOptions(catOptions)
-  //       return
-  //     }
-  //     const res = await fetch(`${API}/categories`, {
-  //       method: "GET",
-  //     });
-  //     console.log(res);
-  //     const data = await res.json();
-  //     console.log(data);
-  //     setCatOptions(data);
-  //   } catch (err) {
-  //     console.error("Login error:", err);
-  //   } finally {
-  //   }
-  // };
+  const getAllCategory = async () => {
+    try {
+      
+      const res = await fetch(`${API}/categories`, {
+        method: "GET",
+      });
+      console.log(res);
+      const data = await res.json();
+      console.log(data);
+      setCatOptions(data);
+    } catch (err) {
+      console.error("Login error:", err);
+    } finally {
+    }
+  };
   const [filters, setFilters] = useState({
     category: "",
     district: "",
@@ -50,7 +48,7 @@ function ShopPage({
   console.log(catOptions);
   // Update filters if location state changes (e.g. navigating to /shop from different category)
   useEffect(() => {
-    // getAllCategory()
+    getAllCategory()
     setFilters((f) => ({
       ...f,
       category: locationState.category || f.category,

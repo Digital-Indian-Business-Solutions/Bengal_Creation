@@ -1039,7 +1039,7 @@ export default function App() {
               openCart={() => setCartOpen(true)}
               setFilterCategory={setFilterCategory}
               allProducts={allProducts}
-              vendors={vendors}
+              // vendors={vendors}
             />
           }
         />
