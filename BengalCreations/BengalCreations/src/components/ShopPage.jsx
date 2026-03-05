@@ -14,7 +14,14 @@ function ShopPage({
   const navigate = useNavigate();
   const location = useLocation();
   const locationState = location.state || {};
-  const [catOptions,setCatOptions]=useState([])
+  const [catOptions,setCatOptions]=useState([
+  { name: "Handloom Sarees", emoji: "🥻" },
+  { name: "Terracotta Crafts", emoji: "🏺" },
+  { name: "Dokra Art", emoji: "🔔" },
+  { name: "Wooden Handicrafts", emoji: "🪵" },
+  { name: "Jute Products", emoji: "🧺" },
+  { name: "Bengal Sweets", emoji: "🍬" },
+  ])
   const getAllCategory = async () => {
     try {
       if(catOptions.length>0){
