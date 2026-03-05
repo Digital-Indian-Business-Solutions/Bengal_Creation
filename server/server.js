@@ -166,9 +166,9 @@ const seedVendorAndProducts = async () => {
       banner:
         "https://res.cloudinary.com/dncmyykoh/image/upload/v1772653147/WhatsApp_Image_2025-12-06_at_19.01.11_1_myuowg.jpg",
       documents: {
-        tradeLicense: null,
-        aadhaarCard: null,
-        panCard: null,
+        tradeLicense: " ",
+        aadhaarCard: " ",
+        panCard: " ",
       },
       isVerified: true,
     });
