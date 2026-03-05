@@ -687,7 +687,7 @@ export default function App() {
       const res = await fetch(`${API}/vendors`);
       const data = await res.json();
 
-      const formattedVendors = data.map((v) => ({
+      const formattedVendors = data.vendors.map((v) => ({
         id: v._id,
         name: v.shopName,
         owner: v.name,
