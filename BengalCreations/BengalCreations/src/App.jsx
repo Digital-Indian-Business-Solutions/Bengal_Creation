@@ -1024,6 +1024,7 @@ export default function App() {
               onToggleWish={toggleWishlist}
               allProducts={allProducts}
               WB_DISTRICTS={WB_DISTRICTS}
+              catOptions={catOptions}
             />
           }
         />
