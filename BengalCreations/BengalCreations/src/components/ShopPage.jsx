@@ -78,7 +78,7 @@ function ShopPage({
               }
             >
               <option value="">All Categories</option>
-              { console.log("test : ".catOptions)}
+              { console.log("test : ",catOptions)}
               {
                
               catOptions.map((c) => (
