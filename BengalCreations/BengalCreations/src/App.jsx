@@ -711,7 +711,7 @@ export default function App() {
       const res = await fetch(`${API}/categories`, {
         method: "GET",
       });
-      // console.log(res)
+      console.log(res)
       const data = await res.json();
       console.log(data)
       // setCategoryTiles(data)
