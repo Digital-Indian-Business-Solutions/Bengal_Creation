@@ -103,7 +103,7 @@ function DashboardPage({
         const uploadedUrl = await uploadImage(file);
         imageUrl.push(uploadedUrl)
       }
-      formData = {
+      const formData = {
         name: form.name,
         price: form.price,
         originalPrice: form.originPrice,
