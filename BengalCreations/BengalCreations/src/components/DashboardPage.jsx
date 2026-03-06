@@ -100,7 +100,7 @@ function DashboardPage({
       const formData = new FormData();
       formData.append("name", form.name);
       formData.append("price", form.price);
-      formData.append("orginalPrice", form.originPrice);
+      formData.append("originalPrice", form.originPrice);
       formData.append("stock", form.stock);
       formData.append("category", selectedCat._id);
       formData.append("district", form.district);
@@ -117,13 +117,14 @@ function DashboardPage({
       // console.log(data.getAll());
       console.log(formData.get("name"));
       console.log(formData.get("price"));
-      console.log(formData.get("orginalPrice"));
+      console.log(formData.get("originalPrice"));
       console.log(formData.get("stock"));
       console.log(formData.get("category"));
       console.log(formData.get("district"));
       console.log(formData.get("description"));
       console.log(formData.get("images"));
 
+      const imageUrl=[]
 
       // FIX 4: use imageFiles (File objects), not images (blob URLs)
       for (const file of imageFiles) {
