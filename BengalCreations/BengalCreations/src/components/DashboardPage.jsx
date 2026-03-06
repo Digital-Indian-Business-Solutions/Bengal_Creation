@@ -134,7 +134,7 @@ function DashboardPage({
 
       const res = await fetch(`${API}/products`, {
         method: "POST",
-        body: formData,
+        body: JSON.stringify(formData),
       });
       // console.log(res)
       const data = await res.json();
