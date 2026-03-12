@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import axios from "axios";
 function CheckoutPage({ cart, onPlaceOrder }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", phone: "", address: "", city: "", pin: "" });
@@ -10,16 +10,109 @@ function CheckoutPage({ cart, onPlaceOrder }) {
 
   const subtotal = cart.reduce((s, p) => s + p.price * (p.quantity || 1), 0);
   const tax = Math.round(subtotal * 0.05);
- console.log(cart)
-  const handlePlace = () => {
-    if (!form.name || !form.phone || !form.address || !form.city || !form.pin) { alert("Please fill all required fields"); return; }
-    if (!/^\d{6}$/.test(form.pin)) { alert("Please enter a valid 6-digit PIN code"); return; }
-    const oid = "ORD-" + Date.now().toString().slice(-6);
-    onPlaceOrder({ id: oid, items: [...cart], total: subtotal + tax, address: `${form.name}, ${form.address}, ${form.city} – ${form.pin}`, payment, status: "confirmed", date: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) });
-    setOrderId(oid);
-    setOrdered(true);
-  };
+//  console.log(cart)
+const API = import.meta.env.VITE_API || "http://localhost:5000/api";
+const handlePlace = async () => {
 
+  try {
+
+    if (!form.name || !form.phone || !form.address || !form.city || !form.pin) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    if (!/^\d{6}$/.test(form.pin)) {
+      alert("Please enter a valid 6-digit PIN code");
+      return;
+    }
+
+    const totalAmount = subtotal + tax;
+
+    // 1️⃣ Create order in backend database
+    const orderRes = await axios.post(`${API}/orders`, {
+      items: cart,
+      totalAmount: totalAmount,
+      address: `${form.name}, ${form.address}, ${form.city} – ${form.pin}`,
+      paymentMethod: payment
+    });
+
+    const orderId = orderRes.data._id;
+
+    // 2️⃣ Create Razorpay payment order
+    const paymentRes = await axios.post(
+      `${API}/payment/create/${orderId}`
+    );
+
+    const { razorOrder, key } = paymentRes.data;
+
+    await loadRazorpay();
+
+    const options = {
+
+      key: key,
+      amount: razorOrder.amount,
+      currency: "INR",
+      name: "Bengal Creations",
+      description: "Artisan Product Purchase",
+      order_id: razorOrder.id,
+
+      handler: async function (response) {
+
+        await axios.post(
+          `{API}/payment/verify`,
+          {
+            ...response,
+            orderId
+          }
+        );
+
+        setOrderId(orderId);
+        setOrdered(true);
+
+      },
+
+      prefill: {
+        name: form.name,
+        contact: form.phone
+      },
+
+      theme: {
+        color: "#800000"
+      }
+
+    };
+
+    const rzp = new window.Razorpay(options);
+
+    rzp.on("payment.failed", async function () {
+
+      await axios.post(
+        `${API}/payment/failed`,
+        { orderId }
+      );
+
+      alert("Payment failed. Please retry.");
+
+    });
+
+    rzp.open();
+
+  } catch (error) {
+
+    console.error(error);
+    alert("Payment initialization failed");
+
+  }
+
+};
+  const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    document.body.appendChild(script);
+  });
+};
   if (ordered) return (
     <div style={{ textAlign: "center", padding: "80px 20px" }}>
       <div style={{ fontSize: 80, marginBottom: 16 }}>🎉</div>
@@ -29,6 +122,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
       <button className="btn-gold" onClick={() => navigate("/orders")}>📦 Track My Order</button>
     </div>
   );
+  
 
   return (
     <div>
