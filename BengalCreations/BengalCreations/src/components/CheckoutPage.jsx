@@ -59,7 +59,7 @@ const handlePlace = async () => {
       handler: async function (response) {
 
         await axios.post(
-          `{API}/payment/verify`,
+          `${API}/payment/verify`,
           {
             ...response,
             orderId
