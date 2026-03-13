@@ -1884,4 +1884,7 @@ footer {
   .carousel-wrapper{
     margin: 0px;
   }
+  .carousel-track-outer{
+    margin:0px;
+  }
 }
