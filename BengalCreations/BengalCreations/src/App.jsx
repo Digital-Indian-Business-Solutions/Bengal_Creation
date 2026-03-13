@@ -711,9 +711,9 @@ export default function App() {
       const res = await fetch(`${API}/categories`, {
         method: "GET",
       });
-      console.log(res)
+      console.log(res);
       const data = await res.json();
-      console.log(data)
+      console.log(data);
       // setCategoryTiles(data)
       // data.vendor.role = "vendor";
       setCatOptions(data);
@@ -742,7 +742,7 @@ export default function App() {
       // setError(err.message);
       console.error("Login error:", err);
     } finally {
-      // setLoading(false);  
+      // setLoading(false);
     }
   };
 
@@ -871,7 +871,7 @@ export default function App() {
     async (productId) => {
       try {
         // const token = localStorage.getItem("token");
-        console.log(productId)
+        console.log(productId);
         let user = JSON.parse(localStorage.getItem("sm_user"));
         console.log(user);
         const res = await fetch(`${API}/cart/remove/${productId}`, {
@@ -1064,7 +1064,10 @@ export default function App() {
           path="/checkout"
           element={<CheckoutPage cart={cart} onPlaceOrder={handlePlaceOrder} />}
         />
-        <Route path="/orders" element={<OrdersPage userId={currentUser._id} />} />
+        <Route
+          path="/orders"
+          element={<OrdersPage userId={currentUser!==null?currentUser._id:null} />}
+        />
         <Route
           path="/login"
           element={<LoginPage onLogin={handleLogin} showToast={showToast} />}

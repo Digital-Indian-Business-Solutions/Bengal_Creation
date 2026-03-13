@@ -1,8 +1,10 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 function OrdersPage({ userId }) {
   const API = import.meta.env.VITE_API || "http://localhost:5000/api";
   const [orders, setOrders] = useState([]);
+  const nev=useNavigate()
   const statusColors = {
     Pending: "#999",
     Processing: "#ff9800",
@@ -31,6 +33,9 @@ function OrdersPage({ userId }) {
       console.error("Order fetch error", err);
     }
   };
+  if(!userId){
+    nev("/")
+  }
 
   return (
     <div>
