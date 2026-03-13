@@ -38,14 +38,14 @@ router.post("/", async (req, res) => {
   const tax = Math.round(cart.totalAmount * 0.05);
   const totalAmount = cart.totalAmount + tax;
   const order = new Order({
-    customer: req.user.id,
+    customer: user_id,
     items: cart.items,
     address,
     totalAmount:  totalAmount,
   });
 
   await order.save();
-  await Cart.findOneAndDelete({ customer: req.user.id });
+  await Cart.findOneAndDelete({ customer: user_id });
 
   res.json( order );
 });
