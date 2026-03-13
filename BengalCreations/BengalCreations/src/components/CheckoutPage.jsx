@@ -86,7 +86,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
 
       rzp.open();
     } catch (error) {
-      console.error(error);
+      console.log(error);
       alert("Payment initialization failed");
     }
   };
