@@ -1887,11 +1887,11 @@ footer {
   .carousel-track-outer{
     margin:0px;
   }
-  .carousel-track {
+  /* .carousel-track {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 products per row */
+    grid-template-columns: repeat(3, 1fr); 
     grid-auto-flow: column;
-    grid-template-rows: repeat(2, auto); /* 2 rows */
+    grid-template-rows: repeat(2, auto); 
     gap: 10px;
     transform: none !important;
     padding-bottom: 10px;
@@ -1899,5 +1899,5 @@ footer {
 
   .carousel-card {
     width: 100%;
-  }
+  } */
 }
