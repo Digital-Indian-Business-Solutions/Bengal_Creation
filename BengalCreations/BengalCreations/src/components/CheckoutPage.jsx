@@ -133,7 +133,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
     const loadAddresses = async () => {
       const user = JSON.parse(localStorage.getItem("sm_user"));
 
-      const res = await axios.get(`${API}/address/my/${user._id}`);
+      const res = await axios.get(`${API}/addresses/my/${user._id}`);
 
       setAddress(res.data);
     };
@@ -144,7 +144,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
     try {
       const user = JSON.parse(localStorage.getItem("sm_user"));
 
-      const res = await axios.post(`${API}/address`, {
+      const res = await axios.post(`${API}/addresses`, {
         customer: user._id,
         fullName: form.name,
         phone: form.phone,
