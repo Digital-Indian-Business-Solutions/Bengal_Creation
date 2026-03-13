@@ -18,7 +18,7 @@ router.post("/", async (req, res) => {
 
   const address = await Address.findOne({
     _id: addressId,
-    customer: req.user.id,
+    customer: user_id,
   });
 
   if (!address) return res.status(404).json({ msg: "Address not found" });
