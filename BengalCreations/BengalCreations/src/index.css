@@ -1867,3 +1867,18 @@ footer {
     padding-top: 2px;
   }
 }
+@media (max-width: 768px) {
+  .carousel-nav {
+    display: none;
+  }
+
+  .carousel-track-outer {
+    overflow-x: auto;
+    scroll-behavior: smooth;
+  }
+
+  .carousel-track {
+    transform: none !important;
+    display: flex;
+  }
+}

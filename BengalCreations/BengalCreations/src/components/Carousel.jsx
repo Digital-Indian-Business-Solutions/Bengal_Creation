@@ -3,15 +3,31 @@ import { useState } from "react";
 
 function Carousel({ title, products, onShowProduct }) {
   const [idx, setIdx] = useState(0);
+  const startX = useRef(0);
   const CAR_VISIBLE = 5;
   const pages = Math.ceil(products.length / CAR_VISIBLE);
 
   const move = (dir) => setIdx(i => (i + dir + pages) % pages);
+   const handleTouchStart = (e) => {
+    startX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    const diff = startX.current - e.changedTouches[0].clientX;
+
+    if (diff > 50) move(1); // swipe left
+    if (diff < -50) move(-1); // swipe right
+  };
 
   return (
     <div className="section alpona-bg" >
       <h2 className="section-title">{title}</h2>
-      <div className="carousel-wrapper">
+      <div className="carousel-wrapper"
+      
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      >
+
         <button className="carousel-nav prev" onClick={() => move(-1)}>‹</button>
         <div className="carousel-track-outer">
           <div className="carousel-track" style={{ transform: `translateX(-${idx * CAR_VISIBLE * 240}px)` }}>
