@@ -31,11 +31,14 @@ if (!cart) {
   for (const item of cart.items) {
     const product = await Product.findById(item.product);
     if (!product) return res.status(404).json({ msg: "Product not found" });
-    if (product.stock < item.quantity)
+    if (product.stock < item.quantity){
+      console.log(product);
+      
       return res.status(400).json({
         msg: product.name + " out of stock",
       });
 
+    }
     product.stock -= item.quantity;
     await product.save();
   }
