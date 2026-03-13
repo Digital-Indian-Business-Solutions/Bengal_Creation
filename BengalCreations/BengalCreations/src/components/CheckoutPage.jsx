@@ -95,6 +95,8 @@ function CheckoutPage({ cart, onPlaceOrder }) {
       console.log(error);
       alert("Payment initialization failed");
     }
+    const user= JSON.parse(localStorage.getItem("sm_user"))
+    navigate(`/orders/${user?._id}`)
   };
   const loadRazorpay = () => {
   return new Promise((resolve) => {
