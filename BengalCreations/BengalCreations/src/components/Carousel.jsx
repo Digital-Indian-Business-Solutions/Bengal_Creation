@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { cloudinaryResize } from "../service/helper";
 
 function Carousel({ title, products, onShowProduct, loading }) {
   const [idx, setIdx] = useState(0);
@@ -57,20 +58,13 @@ function Carousel({ title, products, onShowProduct, loading }) {
                       <div className="carousel-card-img">
                         {p.thumb ? (
                           <img
-                            src={p.thumb.replace(
-                              "/upload/",
-                              "/upload/w_400,q_auto,f_auto/",
-                            )}
+                            src={cloudinaryResize(p.images?.[0], 400)}
                             srcSet={`
-                              ${p.images[0].replace("/upload/", "/upload/w_200,q_auto,f_auto/")} 200w,
-                              ${p.images[0].replace("/upload/", "/upload/w_400,q_auto,f_auto/")} 400w,
-                              ${p.images[0].replace("/upload/", "/upload/w_800,q_auto,f_auto/")} 800w,
-                              ${p.images[0].replace("/upload/", "/upload/w_1200,q_auto,f_auto/")} 1200w
-                              `}
-                            sizes="(max-width: 480px) 200px,
-                                   (max-width: 768px) 400px,
-                                   (max-width: 1200px) 800px,
-                                  1200px"
+                                    ${cloudinaryResize(p.images?.[0], 200)} 200w,
+                                    ${cloudinaryResize(p.images?.[0], 400)} 400w,
+                                    ${cloudinaryResize(p.images?.[0], 800)} 800w
+                                  `}
+                            sizes="(max-width:480px) 200px, (max-width:768px) 400px, 800px"
                             alt={p.name}
                             loading="lazy"
                           />
