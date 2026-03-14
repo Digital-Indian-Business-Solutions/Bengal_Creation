@@ -81,8 +81,21 @@ router.put("/:id", async (req, res) => {
   res.json(product);
 });
 
-// DELETE PRODUCT
 
+router.get("/vendor/:vendorId", async (req, res) => {
+  try {
+    const products = await Product.find({
+      vendor: req.params.vendorId,
+    })
+      .populate("category", "name")
+      .populate("vendor", "shopName");
+
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+// DELETE PRODUCT
 router.delete("/:id", async (req, res) => {
   await Product.findByIdAndDelete(req.params.id);
   res.json({ msg: "Product deleted" });

@@ -1088,9 +1088,7 @@ export default function App() {
             <DashboardPage
               currentUser={currentUser}
               onShowToast={showToast}
-              allProducts={allProducts}
               emojiOptions={emojiOptions}
-              catOptions={catOptions}
               WB_DISTRICTS={WB_DISTRICTS}
             />
           }

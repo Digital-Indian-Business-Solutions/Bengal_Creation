@@ -4,7 +4,6 @@ const API = import.meta.env.VITE_API || "http://localhost:5000/api";
 function DashboardPage({
   currentUser,
   onShowToast,
-  allProducts,
   WB_DISTRICTS,
 }) {
   const [images, setImages] = useState([]);
@@ -12,11 +11,50 @@ function DashboardPage({
   const [hoverImg, setHoverImg] = useState(null);
   const [activeTab, setActiveTab] = useState("myproducts");
   const [dashProducts, setDashProducts] = useState(
-    Array.isArray(allProducts) ? allProducts.slice(0, 6) : [],
+   []
   );
+  const [allProducts,setAllProducts]=useState([]);
   const [selectedEmoji, setSelectedEmoji] = useState("🥻");
   const [selectedCat, setSelectedCat] = useState(null);
   const [catOptions, setCatOptions] = useState([]);
+  const getAllProduct = async () => {
+    try {
+      const res = await fetch(`${API}/products//vendor/${currentUser._id}`, {
+        method: "GET",
+      });
+      const data = await res.json();
+      // console.log(data);
+
+      // Transform server data to expected format
+      const transformed = data.map((item) => ({
+        id: item._id,
+        name: item.name,
+        vendor: item.vendor?.shopName || "Unknown Store",
+        vendorId: item.vendor?._id,
+        category: item.category?.name || "Uncategorized",
+        price: item.price,
+        original: item.orginalPrice,
+        district: item.district?.replace("📍 ", "") || "", // strip emoji if stored with it
+        rating: item.rating || 0,
+        reviews: item.reviews || 0,
+        emoji: item.emoji || "🛍️",
+        stock: item.stock,
+        thumb: item.images?.[0] || null,
+        images:
+          item.images?.map((url, i) => ({
+            url,
+            label: i === 0 ? "Front View" : `View ${i + 1}`,
+          })) || [],
+        desc: item.description || "",
+        isActive: item.isActive,
+      }));
+
+      setAllProducts(transformed);
+      setDashProducts(allProducts)
+    } catch (err) {
+      console.error("Fetch products error:", err);
+    }
+  };
     const getAllCategory = async () => {
     try {
       // setLoading(true);
@@ -39,6 +77,7 @@ function DashboardPage({
   };
   useEffect(() => {
     setSelectedCat(catOptions[0]);
+    getAllProduct()
     getAllCategory()
   }, []);
   
