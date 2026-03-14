@@ -48,6 +48,9 @@ function Carousel({ title, products, onShowProduct, loading }) {
                   </div>
                 ))
               : products.map((p) => {
+                  const img = p?.images?.[0];
+                  console.log(img)
+                  console.log(typeof img)
                   const disc = Math.round((1 - p.price / p.original) * 100);
                   return (
                     <div
@@ -56,9 +59,11 @@ function Carousel({ title, products, onShowProduct, loading }) {
                       onClick={() => onShowProduct(p.id)}
                     >
                       <div className="carousel-card-img">
-                        {p.thumb ? (
+                        {p.thumb ? ( img ?(
                           <img
-                            src={cloudinaryResize(p.images?.[0], 400)}
+                            src={
+                              cloudinaryResize(img, 400)
+                            }
                             srcSet={`
                                     ${cloudinaryResize(p.images?.[0], 200)} 200w,
                                     ${cloudinaryResize(p.images?.[0], 400)} 400w,
@@ -67,7 +72,16 @@ function Carousel({ title, products, onShowProduct, loading }) {
                             sizes="(max-width:480px) 200px, (max-width:768px) 400px, 800px"
                             alt={p.name}
                             loading="lazy"
+                          />)
+                          :(
+                            <img
+                            src={
+                              p.thumb
+                            }
+                            alt={p.name}
+                            loading="lazy"
                           />
+                          )
                         ) : (
                           <div
                             style={{
