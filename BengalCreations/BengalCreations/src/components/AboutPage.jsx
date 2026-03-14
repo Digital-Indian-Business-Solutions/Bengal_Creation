@@ -71,7 +71,7 @@ function AboutPage() {
           </h3>
 
           <img
-            src={"../assets/digitalindan-logo.png"}
+            src={"/digitalindan-logo.png"}
             alt="DigitalIndan Logo"
             style={{
               width: 160,
