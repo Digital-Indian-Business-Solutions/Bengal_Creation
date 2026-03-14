@@ -94,7 +94,7 @@ router.get("/status/:status", async (req, res) => {
 
 router.get("/", async (req, res) => {
   const orders = await Order.find()
-    .populate("user", "name email")
+    .populate("user", "name email phone")
     .populate("items.product", "name price")
     .populate("items.vendor", "shopName")
     .populate("address")
