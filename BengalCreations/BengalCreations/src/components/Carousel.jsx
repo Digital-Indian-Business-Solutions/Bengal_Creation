@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 
 
-function Carousel({ title, products, onShowProduct }) {
+function Carousel({ title, products, onShowProduct,loading }) {
   const [idx, setIdx] = useState(0);
   const startX = useRef(0);
   const CAR_VISIBLE = 5;
@@ -31,7 +31,18 @@ function Carousel({ title, products, onShowProduct }) {
         <button className="carousel-nav prev" onClick={() => move(-1)}>‹</button>
         <div className="carousel-track-outer">
           <div className="carousel-track" style={{ transform: `translateX(-${idx * CAR_VISIBLE * 240}px)` }}>
-            {products.map(p => {
+            {loading?
+            Array.from({ length: CAR_VISIBLE }).map((_, i) => (
+      <div className="carousel-card skeleton-card" key={i}>
+        <div className="skeleton-img"></div>
+
+        <div className="carousel-card-body">
+          <div className="skeleton-line title"></div>
+          <div className="skeleton-line price"></div>
+          <div className="skeleton-line rating"></div>
+        </div>
+      </div>
+    )):products.map(p => {
               const disc = Math.round((1 - p.price / p.original) * 100);
               return (
                 <div className="carousel-card" key={p.id} onClick={() => onShowProduct(p.id)}>
@@ -51,7 +62,8 @@ function Carousel({ title, products, onShowProduct }) {
                   </div>
                 </div>
               );
-            })}
+            })
+            }
           </div>
         </div>
         <button className="carousel-nav next" onClick={() => move(1)}>›</button>

@@ -1904,3 +1904,60 @@ footer {
     display: none;
    }
 }
+.skeleton-card {
+  pointer-events: none;
+}
+
+.skeleton-img {
+  width: 100%;
+  height: 180px;
+  border-radius: 8px;
+  background: #eee;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-line {
+  height: 12px;
+  margin-top: 10px;
+  border-radius: 6px;
+  background: #eee;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-line.title {
+  width: 80%;
+  height: 14px;
+}
+
+.skeleton-line.price {
+  width: 50%;
+}
+
+.skeleton-line.rating {
+  width: 30%;
+}
+
+.skeleton-img::after,
+.skeleton-line::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150px;
+  height: 100%;
+  width: 150px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.7),
+    transparent
+  );
+  animation: shimmer 1.3s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    left: 100%;
+  }
+}

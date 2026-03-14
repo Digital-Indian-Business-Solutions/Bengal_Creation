@@ -13,6 +13,7 @@ function HomePage({
   onToggleWish,
   categoryTiles,
   allProducts,
+  loading,
 }) {
   const navigate = useNavigate();
 
@@ -46,6 +47,7 @@ function HomePage({
         title="Trending Products"
         products={allProducts}
         onShowProduct={(id) => navigate(`/product/${id}`)}
+        loading={loading}
       />
 
       {/* Best Sellers */}
@@ -53,36 +55,43 @@ function HomePage({
         title="Best Sellers"
         products={[...allProducts].reverse()}
         onShowProduct={(id) => navigate(`/product/${id}`)}
+        loading={loading}
       />
       <Carousel
         title="Handloom Sarees"
         products={allProducts.filter((p) => p.category === "Handloom Sarees")}
         onShowProduct={(id) => navigate(`/product/${id}`)}
+        loading={loading}
       />
       <Carousel
         title="Dokra Art"
         products={allProducts.filter((p) => p.category === "Dokra Art")}
         onShowProduct={(id) => navigate(`/product/${id}`)}
+        loading={loading}
       />
       <Carousel
         title="Jute Products"
         products={allProducts.filter((p) => p.category === "Jute Products")}
         onShowProduct={(id) => navigate(`/product/${id}`)}
+        loading={loading}
       />
       <Carousel
         title="Terracotta Crafts"
         products={allProducts.filter((p) => p.category === "Terracotta Crafts")}
         onShowProduct={(id) => navigate(`/product/${id}`)}
+        loading={loading}
       />
       <Carousel
         title="Wooden Handicrafts"
         products={allProducts.filter((p) => p.category === "Wooden Handicrafts")}
         onShowProduct={(id) => navigate(`/product/${id}`)}
+        loading={loading}
       />
       <Carousel
         title="Bengal Sweets"
         products={allProducts.filter((p) => p.category === "Bengal Sweets")}
         onShowProduct={(id) => navigate(`/product/${id}`)}
+        loading={loading}
       />
       {/* Footer */}
       <footer>

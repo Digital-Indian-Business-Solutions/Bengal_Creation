@@ -666,6 +666,7 @@ export default function App() {
 
   const [filterCategory, setFilterCategory] = useState("");
   const [cart, setCart] = useState([]);
+
   const [wishlist, setWishlist] = useState(() =>
     JSON.parse(localStorage.getItem("sm_wishlist") || "[]"),
   );
@@ -679,6 +680,7 @@ export default function App() {
   const [toast, setToast] = useState({ msg: "", visible: false });
   const toastTimer = useRef(null);
   const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   // const [categoryTiles, setCategoryTiles] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [catOptions, setCatOptions] = useState([]);
@@ -748,6 +750,7 @@ export default function App() {
 
   const getAllProduct = async () => {
     try {
+      setLoading(true)
       const res = await fetch(`${API}/products`, {
         method: "GET",
       });
@@ -779,6 +782,7 @@ export default function App() {
       }));
 
       setAllProducts(transformed);
+      setLoading(false)
     } catch (err) {
       console.error("Fetch products error:", err);
     }
@@ -1010,6 +1014,7 @@ export default function App() {
               onToggleWish={toggleWishlist}
               categoryTiles={categoryTiles}
               allProducts={allProducts}
+              loading={loading}
             />
           }
         />
