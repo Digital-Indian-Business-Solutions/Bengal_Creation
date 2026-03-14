@@ -289,7 +289,7 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
       {/* Stats */}
       <div className="dash-stats">
         {[
-          [`${totalRevenue.toLocaleString()}}`, "Revenue"],
+          [`${totalRevenue.toLocaleString()}`, "Revenue"],
           [dashProducts.length, "Products"],
           [orders.length, "Orders"],
           ["4.8 ★", "Rating", true],
