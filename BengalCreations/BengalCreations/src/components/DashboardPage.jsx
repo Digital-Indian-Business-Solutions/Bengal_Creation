@@ -23,7 +23,7 @@ function DashboardPage({
         method: "GET",
       });
       const data = await res.json();
-      console.log(data);
+      // console.log(data);
 
       // Transform server data to expected format
       const transformed = data.map((item) => ({
@@ -50,7 +50,10 @@ function DashboardPage({
       }));
 
       setAllProducts(transformed);
+
+      console.log("HI", allProducts)
       setDashProducts(allProducts)
+      console.log("Hello",dashProducts)
     } catch (err) {
       console.error("Fetch products error:", err);
     }
