@@ -175,7 +175,7 @@ function DashboardPage({
     setEditIdx(i);
     setActiveTab("addproduct");
   };
-
+console.log(catOptions)
   return (
     <div>
       <div className="dash-header">
