@@ -48,7 +48,7 @@ function Carousel({ title, products, onShowProduct, loading }) {
                   </div>
                 ))
               : products.map((p) => {
-                  const img = p?.images?.[0];
+                  const img = p?.images?.[0]?.url;
                   console.log(img)
                   console.log(typeof img)
                   const disc = Math.round((1 - p.price / p.original) * 100);
