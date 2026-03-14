@@ -65,9 +65,9 @@ function Carousel({ title, products, onShowProduct, loading }) {
                               cloudinaryResize(img, 400)
                             }
                             srcSet={`
-                                    ${cloudinaryResize(p.images?.[0], 200)} 200w,
-                                    ${cloudinaryResize(p.images?.[0], 400)} 400w,
-                                    ${cloudinaryResize(p.images?.[0], 800)} 800w
+                                    ${cloudinaryResize(p.images?.[0]?.url, 200)} 200w,
+                                    ${cloudinaryResize(p.images?.[0]?.url, 400)} 400w,
+                                    ${cloudinaryResize(p.images?.[0]?.url, 800)} 800w
                                   `}
                             sizes="(max-width:480px) 200px, (max-width:768px) 400px, 800px"
                             alt={p.name}
