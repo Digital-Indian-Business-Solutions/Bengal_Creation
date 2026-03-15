@@ -80,7 +80,20 @@ router.put("/:id", async (req, res) => {
 
   res.json(product);
 });
+router.get("/low-stock", async (req, res) => {
+  const products = await Product.find({ stock: { $lte: 5 } });
+  res.json(products);
+});
+router.put("/bulk-stock", async (req, res) => {
+  const { productIds, stock } = req.body;
 
+  await Product.updateMany(
+    { _id: { $in: productIds } },
+    { $set: { stock: stock } }
+  );
+
+  res.json({ message: "Stock updated successfully" });
+});
 
 router.get("/vendor/:vendorId", async (req, res) => {
   try {
