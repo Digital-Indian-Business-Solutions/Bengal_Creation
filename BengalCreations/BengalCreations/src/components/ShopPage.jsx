@@ -47,33 +47,46 @@ function ShopPage({
   const [ratingFilter, setRatingFilter] = useState(0);
   console.log(catOptions);
   // Update filters if location state changes (e.g. navigating to /shop from different category)
-  useEffect(() => {
-    getAllCategory()
+// Inside ShopPage.jsx
+useEffect(() => {
+  getAllCategory();
+  
+  // This captures the search from the Navbar/Location state
+  if (location.state?.searchQuery !== undefined) {
     setFilters((f) => ({
       ...f,
-      category: locationState.category || f.category,
-      search: locationState.searchQuery || f.search,
+      search: location.state.searchQuery,
+      category: location.state.category || f.category,
     }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.key]);
+  }
+}, [location.key]); // Triggers every time the URL/state changes
+// Inside ShopPage.jsx - the 'filtered' constant
+const filtered = allProducts.filter((p) => {
+  // 1. Basic Filters (Category, District, Price, Rating)
+  if (filters.category && p.category !== filters.category) return false;
+  if (filters.district && p.district !== filters.district) return false;
+  if (filters.priceMin && p.price < parseInt(filters.priceMin)) return false;
+  if (filters.priceMax && p.price > parseInt(filters.priceMax)) return false;
+  if (ratingFilter > 0 && p.rating < ratingFilter) return false;
 
-  const filtered = allProducts.filter((p) => {
-    // console.log(p);
-    if (filters.category && p.category !== filters.category) return false;
-    if (filters.district && p.district !== filters.district) return false;
-    if (filters.priceMin && p.price < parseInt(filters.priceMin)) return false;
-    if (filters.priceMax && p.price > parseInt(filters.priceMax)) return false;
-    if (ratingFilter > 0 && p.rating < ratingFilter) return false;
-    if (filters.search) {
-      const q = filters.search.toLowerCase();
-      if (
-        !p.name.toLowerCase().includes(q) &&
-        !p.vendor.toLowerCase().includes(q)
-      )
-        return false;
+  // 2. Fuzzy Search Logic (%LIKE%)
+  if (filters.search) {
+    const query = filters.search.toLowerCase().trim();
+    
+    // Check if the query exists ANYWHERE in these fields
+    const inName = p.name?.toLowerCase().includes(query);
+    const inVendor = p.vendor?.toLowerCase().includes(query);
+    const inCategory = p.category?.toLowerCase().includes(query);
+    const inDistrict = p.district?.toLowerCase().includes(query);
+
+    // If it's not found in any of those fields, remove from results
+    if (!inName && !inVendor && !inCategory && !inDistrict) {
+      return false;
     }
-    return true;
-  });
+  }
+
+  return true;
+});
 
   const clearFilters = () => {
     setFilters({

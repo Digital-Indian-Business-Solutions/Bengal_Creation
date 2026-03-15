@@ -67,7 +67,6 @@ function Navbar({
             <div className="nav-logo-sub">Heritage Handcrafted</div>
           </div>
         </div>
-
         <div className="nav-actions">
           <div style={{ position: "relative" }} ref={dropdownRef}>
             <button
@@ -171,10 +170,10 @@ function Navbar({
         <button className="hamburger" onClick={() => setMobileOpen(true)}>
           ☰
         </button>
-        <div className="nav-search" style={{}}>
+        <div className="nav-search">
           <input
             type="text"
-            value={search}
+            value={search} // Corrected from filters.search
             placeholder="Search products, shops, crafts..."
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}

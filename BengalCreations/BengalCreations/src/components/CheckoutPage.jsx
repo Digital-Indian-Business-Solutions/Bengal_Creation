@@ -9,6 +9,10 @@ function CheckoutPage({ cart, onPlaceOrder }) {
     address: "",
     city: "",
     pin: "",
+    state: "",
+    houseNo: "",
+    landmark: "",
+    phone: "",
   });
   const [payment, setPayment] = useState("upi");
   const [ordered, setOrdered] = useState(false);
@@ -31,18 +35,17 @@ function CheckoutPage({ cart, onPlaceOrder }) {
         return;
       }
       if (!user) {
-         console.log(user)
+        console.log(user);
         alert("Please select or add a delivery address");
         return;
       }
       // 1️⃣ Create order in backend database
-      console.log(user)
+      console.log(user);
       const orderRes = await axios.post(`${API}/orders`, {
         addressId: address_Id,
         user_id: user._id,
         items: cart,
-        PaymentMethod:"Online"
-
+        PaymentMethod: "Online",
       });
 
       const orderId = orderRes.data._id;
@@ -95,27 +98,25 @@ function CheckoutPage({ cart, onPlaceOrder }) {
       console.log(error);
       alert("Payment initialization failed");
     }
-    const user= JSON.parse(localStorage.getItem("sm_user"))
-    navigate(`/orders/${user?._id}`)
+    const user = JSON.parse(localStorage.getItem("sm_user"));
+    navigate(`/orders/${user?._id}`);
   };
   const loadRazorpay = () => {
-  return new Promise((resolve) => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
 
-    if (window.Razorpay) {
-      resolve(true);
-      return;
-    }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
 
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
 
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-
-    document.body.appendChild(script);
-
-  });
-};
+      document.body.appendChild(script);
+    });
+  };
   if (ordered)
     return (
       <div style={{ textAlign: "center", padding: "80px 20px" }}>
@@ -158,6 +159,9 @@ function CheckoutPage({ cart, onPlaceOrder }) {
         pincode: form.pin,
         city: form.city,
         area: form.address,
+        state: form.state,
+        houseNo: form.houseNo,
+        landmark: form.landmark,
       });
 
       setAddress([...address, res.data]);
@@ -198,16 +202,64 @@ function CheckoutPage({ cart, onPlaceOrder }) {
                     key={a._id}
                     onClick={() => setAddress_Id(a._id)}
                     style={{
-                      border: "1px solid #ddd",
-                      padding: 12,
-                      marginBottom: 10,
+                      border:
+                        address_Id === a._id
+                          ? "2px solid #800000"
+                          : "1px solid #ddd",
+                      padding: 16,
+                      marginBottom: 12,
                       cursor: "pointer",
+                      borderRadius: 12,
                       background: address_Id === a._id ? "#fff5e6" : "white",
+                      transition: "0.2s all ease",
+                      position: "relative",
                     }}
                   >
-                    <b>{a.fullName}</b> ({a.phone})
-                    <br />
-                    {a.area}, {a.city} - {a.pincode}
+                    {/* Radio indicator for better UX */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        right: 16,
+                        top: 16,
+                        width: 18,
+                        height: 18,
+                        borderRadius: "50%",
+                        border: "2px solid #800000",
+                        background:
+                          address_Id === a._id ? "#800000" : "transparent",
+                      }}
+                    />
+
+                    <b style={{ fontSize: 15, color: "#333" }}>{a.fullName}</b>
+                    <span
+                      style={{
+                        fontSize: 13,
+                        color: "var(--text-muted)",
+                        marginLeft: 8,
+                      }}
+                    >
+                      {a.phone}
+                    </span>
+
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: "#555",
+                        marginTop: 6,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {a.houseNo && <span>{a.houseNo}, </span>}
+                      {a.area}
+                      {a.landmark && (
+                        <div style={{ fontStyle: "italic", fontSize: 12 }}>
+                          Landmark: {a.landmark}
+                        </div>
+                      )}
+                      <div>
+                        {a.city}, {a?.state || ''} - <b>{a.pincode}</b>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -216,8 +268,11 @@ function CheckoutPage({ cart, onPlaceOrder }) {
               {[
                 ["name", "Full Name", "text"],
                 ["phone", "Phone", "tel"],
-                ["address", "Full Address", "text"],
+                ["houseNo", "House / Flat / Office No.", "text"],
+                ["address", "Street Address / Colony", "text"],
+                ["landmark", "Landmark (Optional)", "text"],
                 ["city", "City", "text"],
+                ["state", "State", "text"],
                 ["pin", "PIN Code", "text"],
               ].map(([key, label, type]) => (
                 <div

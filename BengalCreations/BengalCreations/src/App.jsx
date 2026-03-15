@@ -824,53 +824,49 @@ export default function App() {
   //   },
   //   [showToast],
   // );
-  const addToCart = useCallback(
-    async (id) => {
-      try {
-        console.log("1");
-        console.log(id);
-        // const token = localStorage.getItem("token");
-        // if (!token) {
-        //   showToast("Please login first!");
-        //   return;
-        // }
-        let user = JSON.parse(localStorage.getItem("sm_user"));
-
-        // Call backend API
-        console.log("3");
-        const res = await fetch(`${API}/cart/add`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            productId: id,
-            quantity: 1,
-            user: {
-              id: user._id,
-            },
-          }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || "Failed to add to cart");
-        }
-
-        // Optional: update cart state from response
-        console.log(data);
-        setCart(data.cart.items);
-        console.log("3");
-        showToast("Product added to cart successfully!");
-      } catch (err) {
-        console.error(err);
-        showToast(err.message || "Something went wrong");
+const addToCart = useCallback(
+  async (id) => {
+    try {
+      const user = JSON.parse(localStorage.getItem("sm_user"));
+      
+      if (!user?._id) {
+        showToast("Please login to add items to your cart");
+        return navigate("/login");
       }
-    },
-    [showToast],
-  );
+
+      const res = await fetch(`${API}/cart/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: id,
+          quantity: 1,
+          user: {
+            id: user._id,
+          },
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to add to cart");
+      }
+
+      // Update local state with the new cart items from backend
+      if (data.cart && data.cart.items) {
+        setCart(data.cart.items);
+      }
+      
+      showToast("Product added to cart! 🛒");
+    } catch (err) {
+      console.error("Cart Error:", err);
+      showToast(err.message || "Something went wrong");
+    }
+  },
+  [showToast, navigate, API, setCart] // Full dependency array
+);
   const removeFromCart = useCallback(
     async (productId) => {
       try {
@@ -957,14 +953,10 @@ export default function App() {
     [showToast],
   );
 
-  const handleSearch = useCallback(
-    (q) => {
-      setFilterCategory("");
-      navigate("/shop", { state: { searchQuery: q } });
-    },
-    [navigate],
-  );
-
+const handleSearch = useCallback((q) => {
+  // Navigate to shop and pass the search query in the 'state'
+  navigate("/shop", { state: { searchQuery: q } });
+}, [navigate]);
   const handleCheckout = () => {
     if (!cart.length) {
       showToast("⚠️ Cart is empty!");
