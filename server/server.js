@@ -30,6 +30,9 @@ const vendorPhoneNumber = process.env.VENDOR_PHONE_NO;
 const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
 require("dotenv").config();
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(",");
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -37,7 +40,7 @@ app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
-      if (origin.includes("vercel.app") || origin.includes("localhost") || origin.includes("bengalcreations.in")) {
+      if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
       callback(new Error("Not allowed by CORS"));
