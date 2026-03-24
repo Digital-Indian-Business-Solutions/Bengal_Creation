@@ -5,6 +5,7 @@ const Cart = require("../models/Cart");
 const Product = require("../models/product");
 const Address = require("../models/address");
 const Customer = require("../models/Customer");
+const { default: mongoose } = require("mongoose");
 // const auth = require("../middleware/customerAuth");
 
 // CREATE ORDER
@@ -15,15 +16,15 @@ router.post("/", async (req, res) => {
   
    console.log("USER ID:", user_id);
 
-  const cart = await Cart.findOne({ customer: user_id });
+  const cart = await Cart.findOne({ customer: new mongoose.Types.ObjectId( user_id) });
 if (!cart) {
     console.log(cart)
     return res.status(400).json({ msg: "Cart empty" });
   }
   console.log("CART FOUND:", cart);
   const address = await Address.findOne({
-    _id: addressId,
-    customer: user_id,
+    _id:new mongoose.Types.ObjectId( addressId),
+    customer:new mongoose.Types.ObjectId( user_id),
   });
 
   if (!address) return res.status(404).json({ msg: "Address not found" });
