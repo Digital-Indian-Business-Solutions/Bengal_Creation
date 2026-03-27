@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import Carousel from "./Carousel";
-import FaseBook from "../assets/facebook.png";
+import { useMemo, useCallback } from "react";
+import Carousel from "../components/Carousel";
+import FaceBook from "../assets/facebook.png";
 import InstaGram from "../assets/instagram.png";
 import TwitTer from "../assets/x.png";
 import YouTube from "../assets/youtube.png";
 import Logo from "../assets/logo.png";
+
 function HomePage({
   setFilterCategory,
   cart,
@@ -17,10 +19,28 @@ function HomePage({
 }) {
   const navigate = useNavigate();
 
-  const goToShop = (category) => {
+  const goToShop = useCallback((category) => {
     setFilterCategory(category);
     navigate("/shop", { state: { category } });
-  };
+  }, [setFilterCategory, navigate]);
+
+  const CATEGORY_CAROUSELS = [
+    "Handloom Sarees",
+    "Dokra Art",
+    "Jute Products",
+    "Terracotta Crafts",
+    "Wooden Handicrafts",
+    "Bengal Sweets",
+  ];
+
+  // Memoize per-category slices so carousel children don't get new array refs
+  const productsByCategory = useMemo(() => {
+    const map = {};
+    CATEGORY_CAROUSELS.forEach((cat) => {
+      map[cat] = allProducts.filter((p) => p.category === cat);
+    });
+    return map;
+  }, [allProducts]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div>
@@ -57,42 +77,18 @@ function HomePage({
         onShowProduct={(id) => navigate(`/product/${id}`)}
         loading={loading}
       />
-      <Carousel
-        title="Handloom Sarees"
-        products={allProducts.filter((p) => p.category === "Handloom Sarees")}
-        onShowProduct={(id) => navigate(`/product/${id}`)}
-        loading={loading}
-      />
-      <Carousel
-        title="Dokra Art"
-        products={allProducts.filter((p) => p.category === "Dokra Art")}
-        onShowProduct={(id) => navigate(`/product/${id}`)}
-        loading={loading}
-      />
-      <Carousel
-        title="Jute Products"
-        products={allProducts.filter((p) => p.category === "Jute Products")}
-        onShowProduct={(id) => navigate(`/product/${id}`)}
-        loading={loading}
-      />
-      <Carousel
-        title="Terracotta Crafts"
-        products={allProducts.filter((p) => p.category === "Terracotta Crafts")}
-        onShowProduct={(id) => navigate(`/product/${id}`)}
-        loading={loading}
-      />
-      <Carousel
-        title="Wooden Handicrafts"
-        products={allProducts.filter((p) => p.category === "Wooden Handicrafts")}
-        onShowProduct={(id) => navigate(`/product/${id}`)}
-        loading={loading}
-      />
-      <Carousel
-        title="Bengal Sweets"
-        products={allProducts.filter((p) => p.category === "Bengal Sweets")}
-        onShowProduct={(id) => navigate(`/product/${id}`)}
-        loading={loading}
-      />
+
+      {/* Per-Category Carousels */}
+      {CATEGORY_CAROUSELS.map((cat) => (
+        <Carousel
+          key={cat}
+          title={cat}
+          products={productsByCategory[cat] || []}
+          onShowProduct={(id) => navigate(`/product/${id}`)}
+          loading={loading}
+        />
+      ))}
+
       {/* Footer */}
       <footer>
         <div className="footer-grid">
@@ -106,40 +102,36 @@ function HomePage({
               }}
             >
               <img src={Logo} alt="" width={60} />
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  lineHeight: 1,
-                }}
-              >
+              <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
                 <h2>Bengal Creations</h2>
                 <span>Heritage Handcrafted</span>
               </div>
             </div>
-            <p>
-              A premium marketplace celebrating the rich cultural heritage of
-              West Bengal. From master artisans to your doorstep.
-            </p>
+            <div>
+              <img src={Logo} alt="" width={60} />
+              <div style={{ display: "flex", flexDirection: "column", lineHeight: 2 }}> 
+              <p>
+              A Unit of Digital Indian Business Solutions Pvt. Ltd
+              </p>
+              </div>
+            </div>
+            
             <div className="social-icons">
               <div className="social-icon">
-                {" "}
-                <img src={FaseBook} alt="Facebook" width={20} />{" "}
+                <img src={FaceBook} alt="Facebook" width={20} />
               </div>
               <div className="social-icon">
-                {" "}
-                <img src={InstaGram} alt="Instagram" width={20} />{" "}
+                <img src={InstaGram} alt="Instagram" width={20} />
               </div>
               <div className="social-icon">
-                {" "}
-                <img src={TwitTer} alt="Twitter" width={20} />{" "}
+                <img src={TwitTer} alt="Twitter" width={20} />
               </div>
               <div className="social-icon">
-                {" "}
-                <img src={YouTube} alt="YouTube" width={20} />{" "}
+                <img src={YouTube} alt="YouTube" width={20} />
               </div>
             </div>
           </div>
+
           <div className="footer-col">
             <h4>Explore</h4>
             <div className="footer-dis">
@@ -150,41 +142,30 @@ function HomePage({
                 "Bengal Sweets",
                 "Jute Products",
               ].map((c) => (
-                <a
-                  key={c}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => goToShop(c)}
-                >
+                <a key={c} style={{ cursor: "pointer" }} onClick={() => goToShop(c)}>
                   {c}
                 </a>
               ))}
             </div>
           </div>
+
           <div className="footer-col">
             <h4>Company</h4>
             <div className="footer-dis">
-              <a
-                style={{ cursor: "pointer" }}
-                onClick={() => navigate("/about")}
-              >
+              <a style={{ cursor: "pointer" }} onClick={() => navigate("/about")}>
                 About Us
               </a>
-              <a
-                style={{ cursor: "pointer" }}
-                onClick={() => navigate("/contact")}
-              >
+              <a style={{ cursor: "pointer" }} onClick={() => navigate("/contact")}>
                 Contact
               </a>
               <a>Press</a>
-              <a
-                style={{ cursor: "pointer" }}
-                onClick={() => navigate("/vendor")}
-              >
+              <a style={{ cursor: "pointer" }} onClick={() => navigate("/vendor")}>
                 Sell With Us
               </a>
               <a>Careers</a>
             </div>
           </div>
+
           <div className="footer-col">
             <h4>Help</h4>
             <div className="footer-dis">
@@ -198,13 +179,12 @@ function HomePage({
         </div>
 
         <div className="footer-bottom">
-          <span>
-            © 2025 Digital Indian. All rights reserved. | Made with ❤️ in Bengal
-          </span>
+          <span>© 2025 Digital Indian. All rights reserved. | Made with ❤️ in Bengal</span>
           <span>🇮🇳 West Bengal, India</span>
         </div>
       </footer>
     </div>
   );
 }
+
 export default HomePage;

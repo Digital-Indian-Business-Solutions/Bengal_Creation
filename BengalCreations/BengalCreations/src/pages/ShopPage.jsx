@@ -1,42 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import ProductCard from "./ProductCard";
-const API = import.meta.env.VITE_API || "http://localhost:5000/api";
-function ShopPage({
-  cart,
-  wishlist,
-  onAddCart,
-  onToggleWish,
-  allProducts,
-  WB_DISTRICTS,
-}) {
-  
+import ProductCard from "../components/ProductCard";
+import { fetchAllCategories } from "../api/api";
+
+function ShopPage({ cart, wishlist, onAddCart, onToggleWish, allProducts, WB_DISTRICTS }) {
   const navigate = useNavigate();
   const location = useLocation();
   const locationState = location.state || {};
-  const [catOptions,setCatOptions]=useState([
-  { name: "Handloom Sarees", emoji: "🥻" },
-  { name: "Terracotta Crafts", emoji: "🏺" },
-  { name: "Dokra Art", emoji: "🔔" },
-  { name: "Wooden Handicrafts", emoji: "🪵" },
-  { name: "Jute Products", emoji: "🧺" },
-  { name: "Bengal Sweets", emoji: "🍬" },
-  ])
-  const getAllCategory = async () => {
-    try {
-      
-      const res = await fetch(`${API}/categories`, {
-        method: "GET",
-      });
-      console.log(res);
-      const data = await res.json();
-      console.log(data);
-      setCatOptions(data);
-    } catch (err) {
-      console.error("Login error:", err);
-    } finally {
-    }
-  };
+
+  const [catOptions, setCatOptions] = useState([
+    { name: "Handloom Sarees", emoji: "🥻" },
+    { name: "Terracotta Crafts", emoji: "🏺" },
+    { name: "Dokra Art", emoji: "🔔" },
+    { name: "Wooden Handicrafts", emoji: "🪵" },
+    { name: "Jute Products", emoji: "🧺" },
+    { name: "Bengal Sweets", emoji: "🍬" },
+  ]);
+
   const [filters, setFilters] = useState({
     category: "",
     district: "",
@@ -45,76 +25,59 @@ function ShopPage({
     search: locationState.searchQuery || "",
   });
   const [ratingFilter, setRatingFilter] = useState(0);
-  console.log(catOptions);
-  // Update filters if location state changes (e.g. navigating to /shop from different category)
-// Inside ShopPage.jsx
-useEffect(() => {
-  getAllCategory();
-  
-  // This captures the search from the Navbar/Location state
-  if (location.state?.searchQuery !== undefined) {
-    setFilters((f) => ({
-      ...f,
-      search: location.state.searchQuery,
-      category: location.state.category || f.category,
-    }));
-  }
-}, [location.key]); // Triggers every time the URL/state changes
-// Inside ShopPage.jsx - the 'filtered' constant
-const filtered = allProducts.filter((p) => {
-  // 1. Basic Filters (Category, District, Price, Rating)
-  if (filters.category && p.category !== filters.category) return false;
-  if (filters.district && p.district !== filters.district) return false;
-  if (filters.priceMin && p.price < parseInt(filters.priceMin)) return false;
-  if (filters.priceMax && p.price > parseInt(filters.priceMax)) return false;
-  if (ratingFilter > 0 && p.rating < ratingFilter) return false;
 
-  // 2. Fuzzy Search Logic (%LIKE%)
-  if (filters.search) {
-    const query = filters.search.toLowerCase().trim();
-    
-    // Check if the query exists ANYWHERE in these fields
-    const inName = p.name?.toLowerCase().includes(query);
-    const inVendor = p.vendor?.toLowerCase().includes(query);
-    const inCategory = p.category?.toLowerCase().includes(query);
-    const inDistrict = p.district?.toLowerCase().includes(query);
+  useEffect(() => {
+    fetchAllCategories()
+      .then(setCatOptions)
+      .catch(console.error);
 
-    // If it's not found in any of those fields, remove from results
-    if (!inName && !inVendor && !inCategory && !inDistrict) {
-      return false;
+    if (location.state?.searchQuery !== undefined) {
+      setFilters((f) => ({
+        ...f,
+        search: location.state.searchQuery,
+        category: location.state.category || f.category,
+      }));
     }
-  }
+  }, [location.key]);
 
-  return true;
-});
+  const filtered = useMemo(() => allProducts.filter((p) => {
+    if (filters.category && p.category !== filters.category) return false;
+    if (filters.district && p.district !== filters.district) return false;
+    if (filters.priceMin && p.price < parseInt(filters.priceMin)) return false;
+    if (filters.priceMax && p.price > parseInt(filters.priceMax)) return false;
+    if (ratingFilter > 0 && p.rating < ratingFilter) return false;
 
-  const clearFilters = () => {
-    setFilters({
-      category: "",
-      district: "",
-      priceMin: "",
-      priceMax: "",
-      search: "",
-    });
+    if (filters.search) {
+      const query = filters.search.toLowerCase().trim();
+      const inName = p.name?.toLowerCase().includes(query);
+      const inVendor = p.vendor?.toLowerCase().includes(query);
+      const inCategory = p.category?.toLowerCase().includes(query);
+      const inDistrict = p.district?.toLowerCase().includes(query);
+      if (!inName && !inVendor && !inCategory && !inDistrict) return false;
+    }
+
+    return true;
+  }), [allProducts, filters, ratingFilter]);
+
+  const clearFilters = useCallback(() => {
+    setFilters({ category: "", district: "", priceMin: "", priceMax: "", search: "" });
     setRatingFilter(0);
-  };
+  }, []);
 
   return (
     <div>
       <div className="shop-layout">
         <aside className="sidebar">
           <h3>🔍 Filter Products</h3>
+
           <div className="filter-section">
             <label>Category</label>
             <select
               className="filter-select"
               value={filters.category}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, category: e.target.value }))
-              }
+              onChange={(e) => setFilters((f) => ({ ...f, category: e.target.value }))}
             >
               <option value="">All Categories</option>
-              {console.log("test : ", catOptions)}
               {catOptions.map((c) => (
                 <option key={c._id ?? c.name} value={c.name}>
                   {c.name}
@@ -122,14 +85,13 @@ const filtered = allProducts.filter((p) => {
               ))}
             </select>
           </div>
+
           <div className="filter-section">
             <label>District</label>
             <select
               className="filter-select"
               value={filters.district}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, district: e.target.value }))
-              }
+              onChange={(e) => setFilters((f) => ({ ...f, district: e.target.value }))}
             >
               <option value="">All Districts</option>
               {WB_DISTRICTS.map((d) => (
@@ -137,6 +99,7 @@ const filtered = allProducts.filter((p) => {
               ))}
             </select>
           </div>
+
           <div className="filter-section">
             <label>Price Range (₹)</label>
             <div className="price-range">
@@ -145,21 +108,18 @@ const filtered = allProducts.filter((p) => {
                 type="number"
                 placeholder="Min"
                 value={filters.priceMin}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, priceMin: e.target.value }))
-                }
+                onChange={(e) => setFilters((f) => ({ ...f, priceMin: e.target.value }))}
               />
               <input
                 className="filter-input"
                 type="number"
                 placeholder="Max"
                 value={filters.priceMax}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, priceMax: e.target.value }))
-                }
+                onChange={(e) => setFilters((f) => ({ ...f, priceMax: e.target.value }))}
               />
             </div>
           </div>
+
           <div className="filter-section">
             <label>Rating</label>
             <div className="chips">
@@ -174,19 +134,14 @@ const filtered = allProducts.filter((p) => {
               ))}
             </div>
           </div>
+
           <button className="clear-filters-btn" onClick={clearFilters}>
             ✕ Clear Filters
           </button>
         </aside>
+
         <div className="shop-main">
-          <h2>
-            {
-              <>
-                {console.log(filters)}
-                {filters.category || "All Products"}
-              </>
-            }
-          </h2>
+          <h2>{filters.category || "All Products"}</h2>
           <div className="shop-count">
             {filtered.length} product{filtered.length !== 1 ? "s" : ""} found
           </div>
@@ -222,4 +177,5 @@ const filtered = allProducts.filter((p) => {
     </div>
   );
 }
+
 export default ShopPage;

@@ -1,49 +1,67 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchUserOrders } from "../api/api";
+
+const STATUS_COLORS = {
+  Pending: "#999",
+  Processing: "#ff9800",
+  Shipped: "#1565c0",
+  Delivered: "var(--green)",
+  Cancelled: "var(--maroon)",
+};
+
+const STATUS_ICONS = {
+  Pending: "⏳",
+  Processing: "⚙️",
+  Shipped: "🚚",
+  Delivered: "📦",
+  Cancelled: "❌",
+};
 
 function OrdersPage({ userId }) {
-  const API = import.meta.env.VITE_API || "http://localhost:5000/api";
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
-  const nev=useNavigate()
-  const statusColors = {
-    Pending: "#999",
-    Processing: "#ff9800",
-    Shipped: "#1565c0",
-    Delivered: "var(--green)",
-    Cancelled: "var(--maroon)",
-  };
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [error, setError] = useState("");
 
-  const statusIcons = {
-    Pending: "⏳",
-    Processing: "⚙️",
-    Shipped: "🚚",
-    Delivered: "📦",
-    Cancelled: "❌",
-  };
   useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
-    try {
-      const res = await fetch(`${API}/orders/user/${userId}`);
-      const data = await res.json();
-      setOrders(data);
-    } catch (err) {
-      console.error("Order fetch error", err);
+    if (!userId) {
+      navigate("/");
+      return;
     }
-  };
-  if(!userId){
-    nev("/")
+    setLoadingOrders(true);
+    fetchUserOrders(userId)
+      .then((data) => { setOrders(data); setLoadingOrders(false); })
+      .catch((err) => {
+        console.error("Order fetch error", err);
+        setError("Failed to load orders. Please try again.");
+        setLoadingOrders(false);
+      });
+  }, [userId, navigate]);
+
+  if (loadingOrders) {
+    return (
+      <div style={{ textAlign: "center", padding: "80px 20px", color: "var(--text-muted)" }}>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>⏳</div>
+        <p>Loading your orders...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ textAlign: "center", padding: "80px 20px", color: "var(--maroon)" }}>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>⚠️</div>
+        <p>{error}</p>
+      </div>
+    );
   }
 
   return (
     <div>
       <div className="orders-header">
         <h2>📦 My Orders</h2>
-        <p
-          style={{ color: "rgba(245,228,184,0.7)", marginTop: 4, fontSize: 14 }}
-        >
+        <p style={{ color: "rgba(245,228,184,0.7)", marginTop: 4, fontSize: 14 }}>
           Track your Bengal Creations orders
         </p>
       </div>
@@ -51,9 +69,7 @@ function OrdersPage({ userId }) {
         {!orders.length ? (
           <div style={{ textAlign: "center", padding: "80px 20px" }}>
             <div style={{ fontSize: 64, marginBottom: 16 }}>📭</div>
-            <h3 style={{ color: "var(--maroon)", marginBottom: 8 }}>
-              No orders yet
-            </h3>
+            <h3 style={{ color: "var(--maroon)", marginBottom: 8 }}>No orders yet</h3>
             <p style={{ color: "var(--text-muted)" }}>
               Start shopping to see your orders here!
             </p>
@@ -74,8 +90,7 @@ function OrdersPage({ userId }) {
               {/* Order Header */}
               <div
                 style={{
-                  background:
-                    "linear-gradient(135deg,var(--maroon-dark),var(--maroon))",
+                  background: "linear-gradient(135deg,var(--maroon-dark),var(--maroon))",
                   padding: "16px 24px",
                   display: "flex",
                   justifyContent: "space-between",
@@ -111,16 +126,13 @@ function OrdersPage({ userId }) {
                     {new Date(o.createdAt).toLocaleDateString()}
                   </div>
                   <div
-                    style={{
-                      fontSize: 18,
-                      fontWeight: 700,
-                      color: "var(--gold-light)",
-                    }}
+                    style={{ fontSize: 18, fontWeight: 700, color: "var(--gold-light)" }}
                   >
                     ₹{o.totalAmount}
                   </div>
                 </div>
               </div>
+
               <div style={{ padding: "20px 24px" }}>
                 {/* Status Bar */}
                 <div
@@ -135,14 +147,13 @@ function OrdersPage({ userId }) {
                     style={{
                       padding: "6px 12px",
                       borderRadius: 6,
-                      background: statusColors[o.status],
+                      background: STATUS_COLORS[o.status] || "#999",
                       color: "white",
                       fontSize: 13,
                     }}
                   >
-                    {statusIcons[o.paymentStatus]} {o.status}
+                    {STATUS_ICONS[o.paymentStatus]} {o.status}
                   </div>
-
                   <div style={{ fontSize: 12 }}>
                     Payment: {o.paymentMethod} ({o.paymentStatus})
                   </div>
@@ -161,20 +172,16 @@ function OrdersPage({ userId }) {
                     }}
                   >
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600 }}>
-                        {item.product?.name}
-                      </div>
-
+                      <div style={{ fontWeight: 600 }}>{item.product?.name}</div>
                       <div style={{ fontSize: 12, color: "#777" }}>
                         Qty: {item.quantity} · ₹{item.price}
                       </div>
                     </div>
-
-                    <div style={{ fontWeight: 700 }}>
-                      ₹{item.price * item.quantity}
-                    </div>
+                    <div style={{ fontWeight: 700 }}>₹{item.price * item.quantity}</div>
                   </div>
                 ))}
+
+                {/* Address */}
                 <div
                   style={{
                     display: "flex",
@@ -188,8 +195,9 @@ function OrdersPage({ userId }) {
                   }}
                 >
                   📍{" "}
-                  {`${o.address?.fullName},${o.address?.city},${o.address?.area},${o.address?.pincode},${o.address?.phone}` ||
-                    "Address"}
+                  {o.address
+                    ? `${o.address.fullName}, ${o.address.city}, ${o.address.area}, ${o.address.pincode}, ${o.address.phone}`
+                    : "Address unavailable"}
                 </div>
               </div>
             </div>
@@ -199,4 +207,5 @@ function OrdersPage({ userId }) {
     </div>
   );
 }
+
 export default OrdersPage;

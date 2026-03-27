@@ -1,4 +1,3 @@
-
 function AboutPage() {
   return (
     <div>
@@ -41,14 +40,10 @@ function AboutPage() {
               boxShadow: "var(--shadow)",
             }}
           >
-            <h3
-              style={{ color: "var(--maroon)", fontSize: 22, marginBottom: 12 }}
-            >
+            <h3 style={{ color: "var(--maroon)", fontSize: 22, marginBottom: 12 }}>
               {title}
             </h3>
-            <p style={{ color: "var(--text-muted)", lineHeight: 1.8 }}>
-              {text}
-            </p>
+            <p style={{ color: "var(--text-muted)", lineHeight: 1.8 }}>{text}</p>
           </div>
         ))}
 
@@ -61,28 +56,20 @@ function AboutPage() {
             padding: 32,
             border: "1px solid var(--border)",
             boxShadow: "var(--shadow)",
-            // textAlign: "center",
           }}
         >
-          <h3
-            style={{ color: "var(--maroon)", fontSize: 22, marginBottom: 16 }}
-          >
+          <h3 style={{ color: "var(--maroon)", fontSize: 22, marginBottom: 16 }}>
             Affiliated With DigitalIndan
           </h3>
-
           <img
             src={"/digitalindan-logo.png"}
             alt="DigitalIndan Logo"
-            style={{
-              width: 160,
-              marginBottom: 16,
-            }}
+            style={{ width: 160, marginBottom: 16 }}
           />
-
           <p style={{ color: "var(--text-muted)", lineHeight: 1.8 }}>
-            Bengal Creations is proudly affiliated with DigitalIndan, a
-            technology initiative focused on empowering digital businesses and
-            promoting Indian creativity on global platforms.
+            Bengal Creations is proudly affiliated with DigitalIndan, a technology
+            initiative focused on empowering digital businesses and promoting Indian
+            creativity on global platforms.
           </p>
         </div>
       </div>

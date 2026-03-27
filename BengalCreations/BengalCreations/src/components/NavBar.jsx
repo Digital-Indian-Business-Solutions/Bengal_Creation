@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 import MobileSideNav from "./MobileSideNav";
 
@@ -13,27 +13,27 @@ function Navbar({
   doLogout,
 }) {
   const navigate = useNavigate();
-  const location = useLocation();
   const [search, setSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef(null);
   const cartCount = cart.length;
-  const [mobileOpen, setMobileOpen] = useState(false);
+
   useEffect(() => {
-    function handler(e) {
+    const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target))
         setShowDropdown(false);
-    }
+    };
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
   }, []);
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (search.trim()) {
       onSearch(search);
       navigate("/shop", { state: { searchQuery: search } });
     }
-  };
+  }, [search, onSearch, navigate]);
 
   return (
     <nav className="navbar">
@@ -41,15 +41,8 @@ function Navbar({
         <div
           className="nav-logo"
           onClick={() => {
-            if (currentUser) {
-              if (currentUser.role === "vendor") {
-                navigate("/dashboard");
-              } else {
-                navigate("/");
-              }
-            } else {
-              navigate("/");
-            }
+            if (currentUser?.role === "vendor") navigate("/dashboard");
+            else navigate("/");
           }}
           style={{
             cursor: "pointer",
@@ -60,13 +53,12 @@ function Navbar({
           }}
         >
           <img src={Logo} alt="Bengal Creations Logo" width={60} />
-          <div
-            style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}
-          >
+          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
             <div className="nav-logo-main">Bengal Creations</div>
             <div className="nav-logo-sub">Heritage Handcrafted</div>
           </div>
         </div>
+
         <div className="nav-actions">
           <div style={{ position: "relative" }} ref={dropdownRef}>
             <button
@@ -85,10 +77,7 @@ function Navbar({
                 {currentUser.role === "vendor" && (
                   <div
                     className="user-dropdown-item"
-                    onClick={() => {
-                      navigate("/dashboard");
-                      setShowDropdown(false);
-                    }}
+                    onClick={() => { navigate("/dashboard"); setShowDropdown(false); }}
                   >
                     📊 Dashboard
                   </div>
@@ -96,10 +85,7 @@ function Navbar({
                 {currentUser.role === "customer" && (
                   <div
                     className="user-dropdown-item"
-                    onClick={() => {
-                      navigate("/wishlist");
-                      setShowDropdown(false);
-                    }}
+                    onClick={() => { navigate("/wishlist"); setShowDropdown(false); }}
                   >
                     ❤️ Wishlist
                   </div>
@@ -107,54 +93,31 @@ function Navbar({
                 {currentUser.role === "customer" && (
                   <div
                     className="user-dropdown-item"
-                    onClick={() => {
-                      navigate("/orders");
-                      setShowDropdown(false);
-                    }}
+                    onClick={() => { navigate("/orders"); setShowDropdown(false); }}
                   >
                     📦 My Orders
                   </div>
                 )}
-
                 <div
                   className="user-dropdown-item"
-                  onClick={() => {
-                    doLogout();
-                    setShowDropdown(false);
-                  }}
+                  onClick={() => { doLogout(); setShowDropdown(false); }}
                 >
                   🚪 Sign Out
                 </div>
               </div>
             )}
           </div>
+
           {currentUser?.role !== "vendor" && (
             <button className="nav-btn" onClick={() => navigate("/")}>
               🏠 Home
             </button>
           )}
-          {/* { currentUser?.role === "vendor" || currentUser?.role === "customer" ? (
-          <button className="nav-btn" onClick={() => navigate("/shop")}>🛍️ Shop</button>
-            ) : null
-          } */}
-
           {currentUser?.role === "vendor" && (
             <button className="nav-btn" onClick={() => navigate("/dashboard")}>
               📊 Dashboard
             </button>
           )}
-          {/* {currentUser?.role=== "customer" &&(
-          <button className="nav-btn" onClick={() => navigate("/shop")}>🛍️ Shop</button>
-            )} */}
-
-          {/* {currentUser?.role === "customer" && (
-            <button className="nav-btn" onClick={() => navigate("/orders")}>📦 My Orders</button>
-          )} */}
-          {/* {currentUser?.role === "customer" && (
-            <button className="nav-btn" onClick={() => navigate("/wishlist")}>
-              ❤️ Wishlist <span className="wish-badge">{wishlist.length}</span>
-            </button>
-          )} */}
           {currentUser?.role === "customer" && (
             <button className="nav-btn" onClick={openCart}>
               🛒 Cart <span className="cart-badge">{cartCount}</span>
@@ -167,13 +130,15 @@ function Navbar({
             📞 Contact
           </button>
         </div>
+
         <button className="hamburger" onClick={() => setMobileOpen(true)}>
           ☰
         </button>
+
         <div className="nav-search">
           <input
             type="text"
-            value={search} // Corrected from filters.search
+            value={search}
             placeholder="Search products, shops, crafts..."
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -181,6 +146,7 @@ function Navbar({
           <button onClick={handleSearch}>🔍 Search</button>
         </div>
       </div>
+
       <MobileSideNav
         isOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
@@ -194,4 +160,5 @@ function Navbar({
     </nav>
   );
 }
+
 export default Navbar;

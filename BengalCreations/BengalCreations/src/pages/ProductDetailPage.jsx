@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-const API = import.meta.env.VITE_API || "http://localhost:5000/api";
+import { fetchAllVendors } from "../api/api";
+
 function ProductDetailPage({
   cart,
   wishlist,
@@ -10,72 +11,53 @@ function ProductDetailPage({
   setFilterCategory,
   allProducts,
 }) {
-  const [vendors, setVendors] = useState([]);
-  const getAllVendors = async () => {
-    try {
-      const res = await fetch(`${API}/vendors`);
-      const data = await res.json();
-      console.log(data);
-      const formattedVendors = data.vendors.map((v) => ({
-        id: v._id,
-        name: v.shopName,
-        owner: v.name,
-        district: v.address,
-        rating: v.rating || 4.5,
-        products: v.products?.length || 0,
-        avatar: "🛍️",
-        category: "Handmade",
-      }));
-
-      setVendors(formattedVendors); // IMPORTANT
-      // console.log(formattedVendors);
-    } catch (err) {
-      console.error("Vendor fetch error:", err);
-    }
-  };
   const { id } = useParams();
   const navigate = useNavigate();
-  const productId = id;
-  const shareProduct = () => {
-    const url = window.location.href; // Current product URL
+  const [vendors, setVendors] = useState([]);
+  const [imgIdx, setImgIdx] = useState(0);
+
+  useEffect(() => {
+    fetchAllVendors().then(setVendors).catch(console.error);
+  }, []);
+
+  // Scroll to top when navigating between products
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setImgIdx(0);
+  }, [id]);
+
+  const p = allProducts.find((x) => x.id === id);
+
+  if (!p) return null;
+
+  const imgs = p.images?.length
+    ? p.images
+    : [{ url: p.thumb || "", label: "Product View" }];
+
+  const disc = p.original ? Math.round((1 - p.price / p.original) * 100) : 0;
+  const v = vendors.find((x) => x.id === p.vendorId);
+  const otherVendorProducts = allProducts.filter(
+    (x) => x.vendorId === p.vendorId && x.id !== p.id
+  );
+
+  const changeImg = useCallback(
+    (dir) => setImgIdx((i) => (i + dir + imgs.length) % imgs.length),
+    [imgs.length]
+  );
+
+  const shareProduct = useCallback(() => {
+    const url = window.location.href;
     if (navigator.share) {
-      // Mobile or modern browsers
       navigator
-        .share({
-          title: p.name,
-          text: `Check out this product: ${p.name}`,
-          url,
-        })
+        .share({ title: p.name, text: `Check out this product: ${p.name}`, url })
         .catch((err) => console.error("Share failed:", err));
     } else {
-      // Fallback: copy URL to clipboard
       navigator.clipboard
         .writeText(url)
         .then(() => alert("Product URL copied to clipboard!"))
         .catch((err) => console.error("Copy failed:", err));
     }
-  };
-  // console.log(productId.v)
-  const [imgIdx, setImgIdx] = useState(0);
-  const p = allProducts.find((x) => x.id === productId);
-  // console.log(p, "Hey")
-  useEffect(() => {
-    getAllVendors();
-  }, []);
-  useEffect(() => {
-    setImgIdx(0);
-  }, [productId]);
-  const otherVendorProducts = allProducts.filter(
-    (x) => x.vendorId === p.vendorId && x.id !== p.id,
-  );
-  if (!p) return null;
-  const imgs = p.images || [{ url: p.thumb || "", label: "Product View" }];
-  const disc = p.original ? Math.round((1 - p.price / p.original) * 100) : 0;
-
-  const v = vendors.find((x) => x.id === p.vendorId);
-
-  const changeImg = (dir) =>
-    setImgIdx((i) => (i + dir + imgs.length) % imgs.length);
+  }, [p?.name]);
 
   return (
     <div>
@@ -90,18 +72,8 @@ function ProductDetailPage({
             <div className="pd-img-label">{imgs[imgIdx].label}</div>
             {imgs.length > 1 && (
               <>
-                <button
-                  className="pd-img-nav prev"
-                  onClick={() => changeImg(-1)}
-                >
-                  ‹
-                </button>
-                <button
-                  className="pd-img-nav next"
-                  onClick={() => changeImg(1)}
-                >
-                  ›
-                </button>
+                <button className="pd-img-nav prev" onClick={() => changeImg(-1)}>‹</button>
+                <button className="pd-img-nav next" onClick={() => changeImg(1)}>›</button>
               </>
             )}
           </div>
@@ -112,11 +84,12 @@ function ProductDetailPage({
                 className={`pd-thumb${i === imgIdx ? " active" : ""}`}
                 onClick={() => setImgIdx(i)}
               >
-                <img src={img.url} alt={img.url} loading="lazy" />
+                <img src={img.url} alt={img.label} loading="lazy" />
               </div>
             ))}
           </div>
         </div>
+
         {/* Info */}
         <div className="pd-info">
           <div className="pd-cat-label">{p.category}</div>
@@ -146,9 +119,7 @@ function ProductDetailPage({
               </span>
             )}
             {disc > 0 && (
-              <span
-                style={{ fontSize: 14, color: "var(--maroon)", marginLeft: 8 }}
-              >
+              <span style={{ fontSize: 14, color: "var(--maroon)", marginLeft: 8 }}>
                 {disc}% OFF
               </span>
             )}
@@ -174,10 +145,7 @@ function ProductDetailPage({
             <button
               className="btn-gold"
               style={{ flex: 1 }}
-              onClick={() => {
-                onAddCart(p.id);
-                openCart();
-              }}
+              onClick={() => { onAddCart(p.id); openCart(); }}
             >
               🛒 Add to Cart
             </button>
@@ -193,9 +161,7 @@ function ProductDetailPage({
 
       {/* Vendor Showcase */}
       {v && (
-        <div
-          style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 40px" }}
-        >
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 40px" }}>
           <div
             style={{
               background: "white",
@@ -208,8 +174,7 @@ function ProductDetailPage({
           >
             <div
               style={{
-                background:
-                  "linear-gradient(135deg,var(--maroon-dark),var(--maroon))",
+                background: "linear-gradient(135deg,var(--maroon-dark),var(--maroon))",
                 padding: "24px 32px",
                 display: "flex",
                 alignItems: "center",
@@ -222,8 +187,7 @@ function ProductDetailPage({
                   width: 64,
                   height: 64,
                   borderRadius: "50%",
-                  background:
-                    "linear-gradient(135deg,var(--gold),var(--gold-light))",
+                  background: "linear-gradient(135deg,var(--gold),var(--gold-light))",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -254,17 +218,10 @@ function ProductDetailPage({
                     fontWeight: 700,
                   }}
                 >
-                  {v?.shopName}
+                  {v.name}
                 </div>
-                <div
-                  style={{
-                    fontSize: 13,
-                    color: "rgba(245,228,184,0.7)",
-                    marginTop: 2,
-                  }}
-                >
-                  {" "}
-                  {v.name} · 📍 {v.district}
+                <div style={{ fontSize: 13, color: "rgba(245,228,184,0.7)", marginTop: 2 }}>
+                  {v.owner} · 📍 {v.district}
                 </div>
               </div>
               <div style={{ display: "flex", gap: 24 }}>
@@ -304,6 +261,7 @@ function ProductDetailPage({
                 ))}
               </div>
             </div>
+
             {otherVendorProducts.length > 0 && (
               <div style={{ padding: "24px 32px" }}>
                 <div
@@ -315,8 +273,7 @@ function ProductDetailPage({
                     fontStyle: "italic",
                   }}
                 >
-                  More from{" "}
-                  <strong style={{ fontStyle: "normal" }}>{v.name}</strong>
+                  More from <strong style={{ fontStyle: "normal" }}>{v.owner}</strong>
                 </div>
                 <div
                   style={{
@@ -326,7 +283,9 @@ function ProductDetailPage({
                   }}
                 >
                   {otherVendorProducts.map((op) => {
-                    const d = Math.round((1 - op.price / op.original) * 100);
+                    const d = op.original
+                      ? Math.round((1 - op.price / op.original) * 100)
+                      : 0;
                     return (
                       <div
                         key={op.id}
@@ -341,21 +300,13 @@ function ProductDetailPage({
                         }}
                       >
                         <div
-                          style={{
-                            height: 100,
-                            overflow: "hidden",
-                            background: "var(--cream2)",
-                          }}
+                          style={{ height: 100, overflow: "hidden", background: "var(--cream2)" }}
                         >
                           {op.thumb ? (
                             <img
                               src={op.thumb}
                               alt={op.name}
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover",
-                              }}
+                              style={{ width: "100%", height: "100%", objectFit: "cover" }}
                               loading="lazy"
                             />
                           ) : (
@@ -385,20 +336,8 @@ function ProductDetailPage({
                           >
                             {op.name}
                           </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 5,
-                            }}
-                          >
-                            <span
-                              style={{
-                                fontSize: 14,
-                                fontWeight: 700,
-                                color: "var(--green)",
-                              }}
-                            >
+                          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: "var(--green)" }}>
                               ₹{op.price.toLocaleString()}
                             </span>
                             {d > 0 && (
@@ -428,4 +367,5 @@ function ProductDetailPage({
     </div>
   );
 }
+
 export default ProductDetailPage;
