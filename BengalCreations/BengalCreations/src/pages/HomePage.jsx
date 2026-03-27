@@ -111,7 +111,8 @@ function HomePage({
             <div>
               <img src={digitalndian} alt="" width={60} />
               <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}> 
-                <span>A Unit of Digital Indian Business Solutions Pvt. Ltd</span>
+                <p>A Unit of Digital Indian Business
+                  Solutions Pvt. Ltd</p>
               </div>
             </div>
             
