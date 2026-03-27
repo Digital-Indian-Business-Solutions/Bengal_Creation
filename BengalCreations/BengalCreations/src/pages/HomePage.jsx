@@ -92,7 +92,11 @@ function HomePage({
 
       {/* Footer */}
       <footer>
-        <div className="footer-grid">
+        <div className="footer-grid" style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between"
+        }}>
           <div className="footer-brand">
             <div
               style={{
