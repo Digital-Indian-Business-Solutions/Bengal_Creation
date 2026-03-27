@@ -98,8 +98,8 @@ function HomePage({
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 6,
-                margin: "4px 2px",
+                gap: "6",
+                margin: "4px 2px"
               }}
             >
               <img src={Logo} alt="" width={60} />
@@ -108,10 +108,12 @@ function HomePage({
                 <span>Heritage Handcrafted</span>
               </div>
             </div>
-            <div>
+            <div style={{display: "flex",
+              gap: "6px"
+            }}>
               <img src={digitalndian} alt="" width={60} />
               <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}> 
-                <p>A Unit of Digital Indian Business
+                <p>A Unit of<br/> Digital Indian Business
                   Solutions Pvt. Ltd</p>
               </div>
             </div>
