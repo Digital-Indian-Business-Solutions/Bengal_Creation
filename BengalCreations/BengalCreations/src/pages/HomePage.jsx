@@ -98,8 +98,8 @@ function HomePage({
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 12,
-                margin: "12px 2px",
+                gap: 6,
+                margin: "4px 2px",
               }}
             >
               <img src={Logo} alt="" width={60} />
@@ -110,8 +110,8 @@ function HomePage({
             </div>
             <div>
               <img src={digitalndian} alt="" width={60} />
-              <div style={{ display: "flex", flexDirection: "column", lineHeight: 2 }}> 
-                <h6>A Unit of Digital Indian Business Solutions Pvt. Ltd</h6>
+              <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}> 
+                <span>A Unit of Digital Indian Business Solutions Pvt. Ltd</span>
               </div>
             </div>
             
