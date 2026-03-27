@@ -6,6 +6,7 @@ import InstaGram from "../assets/instagram.png";
 import TwitTer from "../assets/x.png";
 import YouTube from "../assets/youtube.png";
 import Logo from "../assets/logo.png";
+import digitalndian from "../assets/digitalindian logo.JPG";
 
 function HomePage({
   setFilterCategory,
@@ -98,7 +99,7 @@ function HomePage({
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                marginBottom: 12,
+                margin: "12px 2px",
               }}
             >
               <img src={Logo} alt="" width={60} />
@@ -108,11 +109,9 @@ function HomePage({
               </div>
             </div>
             <div>
-              <img src={Logo} alt="" width={60} />
+              <img src={digitalndian} alt="" width={60} />
               <div style={{ display: "flex", flexDirection: "column", lineHeight: 2 }}> 
-              <p>
-              A Unit of Digital Indian Business Solutions Pvt. Ltd
-              </p>
+                <h6>A Unit of Digital Indian Business Solutions Pvt. Ltd</h6>
               </div>
             </div>
             
