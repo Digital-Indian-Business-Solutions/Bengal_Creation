@@ -6,7 +6,7 @@ function WishlistPage({ wishlist, cart, onAddCart, onToggleWish, onClearWishlist
   const items = allProducts.filter((p) => wishlist.includes(p.id));
 
   return (
-    <div>
+    <div className="bgabout">
       <div className="wishlist-header">
         <div>
           <h2>❤️ My Wishlist</h2>

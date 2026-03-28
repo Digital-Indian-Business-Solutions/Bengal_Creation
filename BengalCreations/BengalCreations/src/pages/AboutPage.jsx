@@ -1,6 +1,6 @@
 function AboutPage() {
   return (
-    <div>
+    <div className="bgabout">
       <div className="about-hero">
         <h1>About Bengal Creations</h1>
         <p

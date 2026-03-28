@@ -129,7 +129,7 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
   }, [dashProducts]);
 
   return (
-    <div>
+    <div className="bgabout">
       <div className="dash-header">
         <div>
           <div

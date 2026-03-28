@@ -6,8 +6,14 @@ import InstaGram from "../assets/instagram.png";
 import TwitTer from "../assets/x.png";
 import YouTube from "../assets/youtube.png";
 import Logo from "../assets/logo.png";
-import digitalndian from "../assets/digitalindian logo.JPG";
-
+import Digitalndian from "../assets/digitalindan-logo.png";
+import Razorpay from "../assets/payment-method/razorpay.png";
+import UPI from "../assets/payment-method/upi.png";
+import Visa from "../assets/payment-method/visa.png";
+import MasterCard from "../assets/payment-method/mastercard.png";
+import RuPay from "../assets/payment-method/rupay.png";
+import GPay from "../assets/payment-method/gpay.png";
+import Paytm from "../assets/payment-method/paytm.png";
 function HomePage({
   setFilterCategory,
   cart,
@@ -20,10 +26,13 @@ function HomePage({
 }) {
   const navigate = useNavigate();
 
-  const goToShop = useCallback((category) => {
-    setFilterCategory(category);
-    navigate("/shop", { state: { category } });
-  }, [setFilterCategory, navigate]);
+  const goToShop = useCallback(
+    (category) => {
+      setFilterCategory(category);
+      navigate("/shop", { state: { category } });
+    },
+    [setFilterCategory, navigate],
+  );
 
   const CATEGORY_CAROUSELS = [
     "Handloom Sarees",
@@ -91,98 +100,105 @@ function HomePage({
       ))}
 
       {/* Footer */}
-      <footer>
+      <footer className="footer">
         <div className="footer-grid">
+          {/* Brand */}
           <div className="footer-brand">
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6",
-                margin: "4px 2px"
-              }}
-            >
-              <img src={Logo} alt="" width={60} />
-              <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
+            <div className="brand-top">
+              <img src={Logo} alt="Logo" className="brand-logo" />
+              <div className="brand-text">
                 <h2>Bengal Creations</h2>
                 <span>Heritage Handcrafted</span>
               </div>
             </div>
-            <div style={{display: "flex",
-              gap: "6px"
-            }}>
-              <img src={digitalndian} alt="" width={60} />
-              <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}> 
-                <p>A Unit of<br/> Digital Indian Business
-                  Solutions Pvt. Ltd</p>
-              </div>
-            </div>
-            
+            <a
+              href="https://digitalindian.co.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+              
+            >
+              <img
+                src={Digitalndian}
+                alt="Digital Indian"
+                className="company-logo"
+              />
+
+              <p className="company-desc">
+                A Unit of Digital Indian Business Solutions Pvt. Ltd
+              </p>
+            </a>
             <div className="social-icons">
-              <div className="social-icon">
-                <img src={FaceBook} alt="Facebook" width={20} />
-              </div>
-              <div className="social-icon">
-                <img src={InstaGram} alt="Instagram" width={20} />
-              </div>
-              <div className="social-icon">
-                <img src={TwitTer} alt="Twitter" width={20} />
-              </div>
-              <div className="social-icon">
-                <img src={YouTube} alt="YouTube" width={20} />
-              </div>
+              <a href="#">
+                <img src={FaceBook} alt="Facebook" />
+              </a>
+              <a href="#">
+                <img src={InstaGram} alt="Instagram" />
+              </a>
+              <a href="#">
+                <img src={TwitTer} alt="Twitter" />
+              </a>
+              <a href="#">
+                <img src={YouTube} alt="YouTube" />
+              </a>
             </div>
           </div>
 
+          {/* Explore */}
           <div className="footer-col">
             <h4>Explore</h4>
-            <div className="footer-dis">
-              {[
-                "Handloom Sarees",
-                "Terracotta Crafts",
-                "Dokra Art",
-                "Bengal Sweets",
-                "Jute Products",
-              ].map((c) => (
-                <a key={c} style={{ cursor: "pointer" }} onClick={() => goToShop(c)}>
-                  {c}
-                </a>
-              ))}
-            </div>
+            {[
+              "Handloom Sarees",
+              "Terracotta Crafts",
+              "Dokra Art",
+              "Bengal Sweets",
+              "Jute Products",
+            ].map((c) => (
+              <p key={c} onClick={() => goToShop(c)}>
+                {c}
+              </p>
+            ))}
           </div>
 
+          {/* Company */}
           <div className="footer-col">
             <h4>Company</h4>
-            <div className="footer-dis">
-              <a style={{ cursor: "pointer" }} onClick={() => navigate("/about")}>
-                About Us
-              </a>
-              <a style={{ cursor: "pointer" }} onClick={() => navigate("/contact")}>
-                Contact
-              </a>
-              <a>Press</a>
-              <a style={{ cursor: "pointer" }} onClick={() => navigate("/vendor")}>
-                Sell With Us
-              </a>
-              <a>Careers</a>
-            </div>
+            <p onClick={() => navigate("/about")}>About Us</p>
+            <p onClick={() => navigate("/contact")}>Contact</p>
+            <p>Press</p>
+            <p onClick={() => navigate("/vendor")}>Sell With Us</p>
+            <p>Careers</p>
           </div>
 
+          {/* Help */}
           <div className="footer-col">
             <h4>Help</h4>
-            <div className="footer-dis">
-              <a>Privacy Policy</a>
-              <a>Terms of Service</a>
-              <a>Shipping Policy</a>
-              <a>Returns</a>
-              <a>FAQ</a>
-            </div>
+            <p>Privacy Policy</p>
+            <p>Terms of Service</p>
+            <p>Shipping Policy</p>
+            <p>Returns</p>
+            <p>FAQ</p>
+          </div>
+        </div>
+        <div className="payment-section">
+          <span className="payment-title">100% Secure Payments</span>
+
+          <div
+            className="payment-icons"
+            style={{ overflow: "hidden", borderRadius: "16px" }}
+          >
+            <img src={Razorpay} alt="Razorpay" />
+            <img src={UPI} alt="UPI" />
+            <img src={GPay} alt="Google Pay" />
+            <img src={Paytm} alt="Paytm" />
+            <img src={Visa} alt="Visa" />
+            <img src={MasterCard} alt="MasterCard" />
+            <img src={RuPay} alt="RuPay" />
           </div>
         </div>
 
         <div className="footer-bottom">
-          <span>© 2025 Digital Indian. All rights reserved. | Made with ❤️ in Bengal</span>
-          <span>🇮🇳 West Bengal, India</span>
+          <span>© 2025 Digital Indian. All rights reserved.</span>
+          <span>Made with ❤️ in Bengal 🇮🇳</span>
         </div>
       </footer>
     </div>

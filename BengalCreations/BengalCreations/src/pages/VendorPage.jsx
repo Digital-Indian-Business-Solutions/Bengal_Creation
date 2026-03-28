@@ -26,7 +26,7 @@ function VendorPage({ onShowToast, catOptions, WB_DISTRICTS }) {
   };
 
   return (
-    <div>
+    <div className="bgabout">
       <div
         style={{
           background: "linear-gradient(135deg,var(--maroon-dark),var(--maroon))",

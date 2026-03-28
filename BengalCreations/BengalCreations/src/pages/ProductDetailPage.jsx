@@ -60,7 +60,7 @@ function ProductDetailPage({
   }, [p?.name]);
 
   return (
-    <div>
+    <div className="">
       <button className="pd-back-btn" onClick={() => navigate(-1)}>
         ← Back
       </button>

@@ -65,7 +65,7 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, allProducts, WB_DIS
   }, []);
 
   return (
-    <div>
+    <div className="">
       <div className="shop-layout">
         <aside className="sidebar">
           <h3>🔍 Filter Products</h3>

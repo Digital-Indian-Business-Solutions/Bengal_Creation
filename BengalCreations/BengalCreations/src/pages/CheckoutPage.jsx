@@ -135,7 +135,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
   }
 
   return (
-    <div>
+    <div className="bgabout">
       <div className="orders-header">
         <h2>🛍️ Checkout</h2>
       </div>

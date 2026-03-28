@@ -58,7 +58,7 @@ function OrdersPage({ userId }) {
   }
 
   return (
-    <div>
+    <div className="bgabout">
       <div className="orders-header">
         <h2>📦 My Orders</h2>
         <p style={{ color: "rgba(245,228,184,0.7)", marginTop: 4, fontSize: 14 }}>
