@@ -160,7 +160,7 @@ h5 {
   border-color: var(--gold);
   color: white;
 }
-.cart-badge {
+/* .cart-badge {
   background: var(--gold);
   color: white;
   border-radius: 50%;
@@ -172,7 +172,7 @@ h5 {
   align-items: center;
   justify-content: center;
   margin-left: 4px;
-}
+} */
 .wish-badge {
   background: var(--maroon-dark);
   color: white;
