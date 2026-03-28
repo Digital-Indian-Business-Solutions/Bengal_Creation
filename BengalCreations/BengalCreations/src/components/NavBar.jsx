@@ -53,7 +53,9 @@ function Navbar({
           }}
         >
           <img src={Logo} alt="Bengal Creations Logo" width={60} />
-          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}
+          >
             <div className="nav-logo-main">Bengal Creations</div>
             <div className="nav-logo-sub">Heritage Handcrafted</div>
           </div>
@@ -77,7 +79,10 @@ function Navbar({
                 {currentUser.role === "vendor" && (
                   <div
                     className="user-dropdown-item"
-                    onClick={() => { navigate("/dashboard"); setShowDropdown(false); }}
+                    onClick={() => {
+                      navigate("/dashboard");
+                      setShowDropdown(false);
+                    }}
                   >
                     📊 Dashboard
                   </div>
@@ -85,7 +90,10 @@ function Navbar({
                 {currentUser.role === "customer" && (
                   <div
                     className="user-dropdown-item"
-                    onClick={() => { navigate("/wishlist"); setShowDropdown(false); }}
+                    onClick={() => {
+                      navigate("/wishlist");
+                      setShowDropdown(false);
+                    }}
                   >
                     ❤️ Wishlist
                   </div>
@@ -93,14 +101,20 @@ function Navbar({
                 {currentUser.role === "customer" && (
                   <div
                     className="user-dropdown-item"
-                    onClick={() => { navigate("/orders"); setShowDropdown(false); }}
+                    onClick={() => {
+                      navigate("/orders");
+                      setShowDropdown(false);
+                    }}
                   >
                     📦 My Orders
                   </div>
                 )}
                 <div
                   className="user-dropdown-item"
-                  onClick={() => { doLogout(); setShowDropdown(false); }}
+                  onClick={() => {
+                    doLogout();
+                    setShowDropdown(false);
+                  }}
                 >
                   🚪 Sign Out
                 </div>
@@ -118,11 +132,15 @@ function Navbar({
               📊 Dashboard
             </button>
           )}
-          {currentUser?.role === "customer" && (
-            <button className="nav-btn" onClick={openCart}>
-              🛒 Cart <span className="cart-badge">{cartCount}</span>
+          
+            <button className="nav-btn cartbtn" onClick={openCart}>
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/1413/1413908.png"
+                alt=""
+              />{" "}
+              <span className="cart-badge">{cartCount}</span>
             </button>
-          )}
+          
           <button className="nav-btn" onClick={() => navigate("/about")}>
             ℹ️ About
           </button>
