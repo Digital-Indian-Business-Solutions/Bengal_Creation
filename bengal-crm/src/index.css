@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-base: #0f1117;
+  --bg-card: #181c27;
+  --bg-card2: #1e2334;
+  --bg-hover: #252b3a;
+  --border: #2a3045;
+  --border2: #343d54;
+  --accent: #4f8ef7;
+  --accent2: #7c5bf5;
+  --green: #22c97a;
+  --amber: #f5a623;
+  --red: #f25757;
+  --purple: #a78bfa;
+  --text: #e8eaf0;
+  --text2: #8892aa;
+  --text3: #505870;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg-base); color: var(--text); min-height: 100vh; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+select, input, button { font-family: 'DM Sans', sans-serif; }
+.mono { font-family: 'Space Mono', monospace; }
