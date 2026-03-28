@@ -159,9 +159,9 @@ function Navbar({
         </div>
         <div className="nav-btn cartbtn">
            <img src="https://cdn-icons-png.flaticon.com/512/1413/1413908.png"/>
-           <p>10</p>
+           <p>{cartCount}</p>
            <button onClick={openCart}>
-              <span className="cart-badge">{cartCount}</span>
+              <span className="cart-badge">Cart</span>
             </button>
         </div>
       </div>
