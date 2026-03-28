@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 import MobileSideNav from "./MobileSideNav";
-
+import CartLogo from "/shopping-cart-svgrepo-com.svg"
+import {ShoppingCart} from "lucide-react"
 function Navbar({
   cart,
   wishlist,
@@ -158,7 +159,7 @@ function Navbar({
           <button onClick={handleSearch}>🔍 Search</button>
         </div>
         <div className="nav-btn cartbtn">
-           <img src="https://cdn-icons-png.flaticon.com/512/1413/1413908.png"/>
+          <ShoppingCart color="#D4AF37" size={22} />
            <p>{cartCount}</p>
            <button onClick={openCart}>
               <span className="cart-badge">Cart</span>
