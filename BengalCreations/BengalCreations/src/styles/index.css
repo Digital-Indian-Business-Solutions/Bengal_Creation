@@ -93,11 +93,11 @@ h5 {
   border: none;
   outline: none;
   padding: 10px 16px;
-  color: white;
+  color: #475569;
   font-size: 14px;
 }
 .nav-search input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: #475569;
 }
 .nav-search button {
   background: var(--gold);
