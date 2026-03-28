@@ -133,13 +133,7 @@ function Navbar({
             </button>
           )}
           
-            <button className="nav-btn cartbtn" onClick={openCart}>
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/1413/1413908.png"
-                alt=""
-              />{" "}
-              <span className="cart-badge">{cartCount}</span>
-            </button>
+           
           
           <button className="nav-btn" onClick={() => navigate("/about")}>
             ℹ️ About
@@ -162,6 +156,13 @@ function Navbar({
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
           <button onClick={handleSearch}>🔍 Search</button>
+        </div>
+        <div className="nav-btn cartbtn">
+           <img src="https://cdn-icons-png.flaticon.com/512/1413/1413908.png"/>
+           <p>10</p>
+           <button onClick={openCart}>
+              <span className="cart-badge">{cartCount}</span>
+            </button>
         </div>
       </div>
 
