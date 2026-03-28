@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+<<<<<<< HEAD
+
+=======
 *.env
 *.env.example
 .gitignore
@@ -21,6 +24,7 @@ uploads/
 *.pdf
 *.zip
 *.mp4
+>>>>>>> c67031138d43460f54119dfacb6271d39c3f99a5
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
