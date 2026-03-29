@@ -241,7 +241,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
             ))}
 
             {/* Inline detail panels */}
-            {payment === "bank" && (
+            {payment === "BANK_TRANSFER" && (
               <div style={instructionBox}>
                 <p style={{ fontWeight: 600, marginBottom: 6 }}>Bank Transfer Details</p>
                 <p>Account Name: <b>{BANK_DETAILS.accountName}</b></p>
@@ -254,7 +254,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
               </div>
             )}
 
-            {payment === "upi" && (
+            {payment === "UPI" && (
               <div style={{ ...instructionBox, textAlign: "center" }}>
                 {UPI_QR_URL
                   ? <img src={UPI_QR_URL} alt="UPI QR Code" style={{ width: 160, marginBottom: 10 }} />
@@ -284,7 +284,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
               </div>
             )}
 
-            {payment === "cod" && (
+            {payment === "COD" && (
               <div style={{ ...instructionBox, color: "#555" }}>
                 💵 Pay in cash when your order is delivered. No advance payment needed.
               </div>
