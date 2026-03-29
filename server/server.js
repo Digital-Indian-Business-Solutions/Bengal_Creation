@@ -108,8 +108,7 @@ app.get("/health", async (req, res) => {
 try {
   const swaggerFile = require("./swagger-output.json");
   const swaggerUi = require("swagger-ui-express");
-  app.use(swaggerUi.serve);
-  app.get("/api-docs", swaggerUi.setup(swaggerFile));
+  app.get("/api-docs",swaggerUi.serve ,swaggerUi.setup(swaggerFile));
 } catch {
   console.log("Swagger file not yet generated.");
 }
