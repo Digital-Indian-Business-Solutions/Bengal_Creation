@@ -31,7 +31,7 @@ app.use(
       callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-  })
+  }),
 );
 
 // Body parsers
@@ -108,14 +108,15 @@ app.get("/health", async (req, res) => {
 try {
   const swaggerUi = require("swagger-ui-express");
   const swaggerFile = require("./swagger-output.json");
-
+  const swaggerUiDist = require("swagger-ui-dist").getAbsoluteFSPath();
+  app.use("/api-docs", express.static(swaggerUiDist));
   app.use(
     "/api-docs",
     swaggerUi.serve,
     swaggerUi.setup(swaggerFile, {
       explorer: true,
       customSiteTitle: "Bengal Creations API Documentation",
-    })
+    }),
   );
 } catch {
   console.log("Swagger file not yet generated.");
@@ -142,7 +143,9 @@ app.use((err, req, res, next) => {
 if (process.env.NODE_ENV !== "production") {
   app.listen(port, () => {
     console.log(`🚀 Server running on http://localhost:${port}`);
-    console.log(`📚 API Documentation available at http://localhost:${port}/api-docs`);
+    console.log(
+      `📚 API Documentation available at http://localhost:${port}/api-docs`,
+    );
   });
 }
 
