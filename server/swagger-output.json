@@ -5,7 +5,7 @@
     "description": "Complete REST API for a multi-vendor marketplace — vendors, products, categories, cart, orders, payments, wishlist, and addresses.",
     "version": "1.0.0"
   },
-  "host": "https://api.bengalcreations.in",
+  "host": "api.bengalcreations.in",
   "basePath": "/",
   "schemes": ["https", "http"],
   "securityDefinitions": {

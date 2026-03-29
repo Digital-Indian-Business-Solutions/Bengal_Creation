@@ -106,25 +106,17 @@ app.get("/health", async (req, res) => {
 });
 
 // Swagger docs (optional — generated file)
-try {
-  const swaggerUi = require("swagger-ui-express");
-  const swaggerFile = require("./swagger-output.json");
-  const swaggerUiDist = require("swagger-ui-dist").getAbsoluteFSPath();
-  app.use("/api-docs", express.static(swaggerUiDist));
-  app.use(
-    "/api-docs",
-    swaggerUi.serve,
-    swaggerUi.setup(swaggerFile, {
-      explorer: true,
-      customSiteTitle: "Bengal Creations API Documentation",
-      swaggerOptions: {
-        url: "/swagger-output.json",
-      },
-    }),
-  );
-} catch {
-  console.log("Swagger file not yet generated.");
-}
+const swaggerUi = require("swagger-ui-express");
+const swaggerFile = require("./swagger-output.json");
+
+app.use("/api-docs", swaggerUi.serveFiles(swaggerFile));
+app.use(
+  "/api-docs",
+  swaggerUi.setup(swaggerFile, {
+    explorer: true,
+    customSiteTitle: "Bengal Creations API Documentation",
+  })
+);
 // 404 handler
 app.use("/", (req, res) => {
   res.redirect("/api-docs");
