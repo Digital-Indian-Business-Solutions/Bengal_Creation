@@ -17,6 +17,7 @@ const customerAuth = require("./routes/customerAuth");
 const wishlistRoutes = require("./routes/wishlistRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const webhookRoutes = require("./routes/webhookRoutes");
+const { url } = require("inspector");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -116,6 +117,9 @@ try {
     swaggerUi.setup(swaggerFile, {
       explorer: true,
       customSiteTitle: "Bengal Creations API Documentation",
+      swaggerOptions: {
+        url: "/swagger-output.json",
+      },
     }),
   );
 } catch {
