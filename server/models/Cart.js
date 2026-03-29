@@ -14,6 +14,11 @@ const cartSchema = new mongoose.Schema({
     quantity: Number,
     price: Number
   }],
+  followUp: {
+        type: String,
+        enum: ["NOT CALLED", "INITIATED", "CALLED","NOT INTERESTED","FOLLOW UP LATER"],
+        default: "NOT CALLED"
+    },
   totalAmount: Number
 }, { timestamps: true });
 

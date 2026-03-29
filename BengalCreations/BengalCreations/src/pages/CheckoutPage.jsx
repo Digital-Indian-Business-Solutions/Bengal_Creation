@@ -16,9 +16,9 @@ const BANK_DETAILS = {
 };
 const UPI_ID = "bengalcreations@upi";
 const PAYMENT_METHODS = [
-  { id: "cod",  icon: "💵", label: "Cash on Delivery", sub: "Pay when your order arrives" },
-  { id: "bank", icon: "🏦", label: "Bank Transfer",    sub: "NEFT / IMPS to our account" },
-  { id: "upi",  icon: "📲", label: "UPI",              sub: "Scan QR or pay via UPI ID"  },
+  { id: "COD",  icon: "💵", label: "Cash on Delivery", sub: "Pay when your order arrives" },
+  { id: "BANK_TRANSFER", icon: "🏦", label: "Bank Transfer",    sub: "NEFT / IMPS to our account" },
+  { id: "UPI",  icon: "📲", label: "UPI",              sub: "Scan QR or pay via UPI ID"  },
 ];
 
 function CheckoutPage({ cart, onPlaceOrder }) {
@@ -77,7 +77,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
         addressId,
         user_id:       currentUser._id,
         items:         cart,
-        PaymentMethod: payment.toUpperCase(), // "COD" | "BANK" | "UPI"
+        PaymentMethod: payment.toUpperCase(), // "COD" | "BANK_TRANSFER" | "UPI"
       });
       setOrderId(orderData._id);
       setOrdered(true);

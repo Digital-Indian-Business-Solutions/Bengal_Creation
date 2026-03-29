@@ -38,7 +38,7 @@ const orderSchema = new mongoose.Schema({
     razorpaySignature: String,
     paymentMethod: {
         type: String,
-        enum: ["COD", "Online"],
+        enum: ["COD", "UPI", "BANK_TRANSFER"],
         default: "Online"
     },
     paymentStatus: {
@@ -50,6 +50,11 @@ const orderSchema = new mongoose.Schema({
         type: String,
         enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],
         default: "Pending"
+    },
+    followUp: {
+        type: String,
+        enum: ["NOT CALLED", "INITIATED", "CALLED","NOT INTERESTED","FOLLOW UP LATER"],
+        default: "NOT CALLED"
     }
 }, { timestamps: true });
 
