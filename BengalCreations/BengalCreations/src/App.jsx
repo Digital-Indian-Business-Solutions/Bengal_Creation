@@ -31,6 +31,8 @@ import { useLocalStorage } from "./hooks/useLocalStorage";
 
 import { WB_DISTRICTS, CATEGORY_TILES, EMOJI_OPTIONS } from "./constants/data";
 import { fetchAllProducts, fetchAllCategories } from "./api/api";
+import Footer from "./components/Footer";
+
 
 export default function App() {
   const navigate = useNavigate();
@@ -195,6 +197,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <Footer  navigate={navigate} />
     </div>
   );
 }

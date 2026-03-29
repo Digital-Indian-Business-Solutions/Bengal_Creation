@@ -59,28 +59,28 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/webhook", webhookRoutes);
 
 // Root endpoint
-// app.get("/", (req, res) => {
-//   res.json({
-//     success: true,
-//     message: "Vendor API Server",
-//     version: "1.0.0",
-//     environment: process.env.NODE_ENV || "development",
-//     timestamp: new Date().toISOString(),
-//     endpoints: {
-//       vendors: "/api/vendors",
-//       products: "/api/products",
-//       categories: "/api/categories",
-//       orders: "/api/orders",
-//       cart: "/api/cart",
-//       addresses: "/api/addresses",
-//       auth: "/api/auth",
-//       wishlist: "/api/wishlist",
-//       payment: "/api/payment",
-//       webhook: "/api/webhook",
-//       health: "/health",
-//     },
-//   });
-// });
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "Vendor API Server",
+    version: "1.0.0",
+    environment: process.env.NODE_ENV || "development",
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      vendors: "/api/vendors",
+      products: "/api/products",
+      categories: "/api/categories",
+      orders: "/api/orders",
+      cart: "/api/cart",
+      addresses: "/api/addresses",
+      auth: "/api/auth",
+      wishlist: "/api/wishlist",
+      payment: "/api/payment",
+      webhook: "/api/webhook",
+      health: "/health",
+    },
+  });
+});
 
 // Health check
 app.get("/health", async (req, res) => {
@@ -106,9 +106,8 @@ app.get("/health", async (req, res) => {
 
 // Swagger docs (optional — generated file)
 try {
-  const swaggerFile = require("./swagger-output.json");
-  const swaggerUi = require("swagger-ui-express");
-  app.get("/api-docs",swaggerUi.serve ,swaggerUi.setup(swaggerFile,{
+const { swaggerUi, swaggerSpec } = require("./swagger");
+  app.use("/api-docs",swaggerUi.serve ,swaggerUi.setup(swaggerFile,{
     explorer: true,
     customSiteTitle: "Bengal Creations API Documentation",
     
