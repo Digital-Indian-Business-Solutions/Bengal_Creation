@@ -109,11 +109,13 @@ try {
   const swaggerFile = require("./swagger-output.json");
   const swaggerUi = require("swagger-ui-express");
   app.use(swaggerUi.serve);
-  app.get("/", swaggerUi.setup(swaggerFile));
+  app.get("/api-docs", swaggerUi.setup(swaggerFile));
 } catch {
   console.log("Swagger file not yet generated.");
 }
-
+app.get("/", (req, res) => {
+  res.redirect("/api-docs");
+})
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "Route not found" });
