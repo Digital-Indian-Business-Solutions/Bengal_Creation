@@ -117,10 +117,7 @@ app.use(
     customSiteTitle: "Bengal Creations API Documentation",
   })
 );
-// 404 handler
-app.use("/", (req, res) => {
-  res.redirect("/api-docs");
-});
+
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "Route not found" });
 });
