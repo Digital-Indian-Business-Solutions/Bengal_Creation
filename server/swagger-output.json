@@ -1,0 +1,941 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Bengal Creations Marketplace API",
+    "description": "Complete REST API for a multi-vendor marketplace — vendors, products, categories, cart, orders, payments, wishlist, and addresses.",
+    "version": "1.0.0"
+  },
+  "host": "https://api.bengalcreations.in",
+  "basePath": "/",
+  "schemes": ["https", "http"],
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "Authorization",
+      "description": "Enter your JWT token as: Bearer <token>"
+    }
+  },
+  "tags": [
+    { "name": "Auth",       "description": "Customer registration & login" },
+    { "name": "Vendors",    "description": "Vendor management" },
+    { "name": "Products",   "description": "Product management" },
+    { "name": "Categories", "description": "Category management" },
+    { "name": "Orders",     "description": "Order management" },
+    { "name": "Cart",       "description": "Shopping cart" },
+    { "name": "Addresses",  "description": "Customer addresses" },
+    { "name": "Wishlist",   "description": "Customer wishlist" },
+    { "name": "Payment",    "description": "Razorpay payment flow" },
+    { "name": "Webhooks",   "description": "Razorpay webhooks" }
+  ],
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register a new customer",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/CustomerRegisterBody" }
+        }],
+        "responses": {
+          "200": { "description": "Customer registered", "schema": { "example": { "msg": "Customer Registered" } } },
+          "400": { "description": "Email already exists" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Customer login",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/CustomerLoginBody" }
+        }],
+        "responses": {
+          "200": { "description": "Login successful", "schema": { "$ref": "#/definitions/CustomerLoginResponse" } },
+          "400": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/api/vendors/register": {
+      "post": {
+        "tags": ["Vendors"],
+        "summary": "Register a new vendor",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/VendorRegisterBody" }
+        }],
+        "responses": {
+          "201": { "description": "Vendor registered", "schema": { "$ref": "#/definitions/Vendor" } },
+          "500": { "description": "Registration failed" }
+        }
+      }
+    },
+    "/api/vendors/login": {
+      "post": {
+        "tags": ["Vendors"],
+        "summary": "Vendor login",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/VendorLoginBody" }
+        }],
+        "responses": {
+          "200": { "description": "Login successful", "schema": { "$ref": "#/definitions/VendorLoginResponse" } },
+          "400": { "description": "Invalid credentials" },
+          "403": { "description": "Vendor not yet verified" }
+        }
+      }
+    },
+    "/api/vendors/pending/all": {
+      "get": {
+        "tags": ["Vendors"],
+        "summary": "Get all unverified (pending) vendors",
+        "responses": {
+          "200": { "description": "List of pending vendors" }
+        }
+      }
+    },
+    "/api/vendors/search/query": {
+      "get": {
+        "tags": ["Vendors"],
+        "summary": "Search vendors by name, shop name, or email",
+        "parameters": [{ "in": "query", "name": "q", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Matching vendors" }
+        }
+      }
+    },
+    "/api/vendors/analytics/summary": {
+      "get": {
+        "tags": ["Vendors"],
+        "summary": "Get vendor analytics summary",
+        "responses": {
+          "200": { "description": "Analytics data", "schema": { "$ref": "#/definitions/VendorAnalytics" } }
+        }
+      }
+    },
+    "/api/vendors": {
+      "get": {
+        "tags": ["Vendors"],
+        "summary": "Get all vendors with pagination",
+        "parameters": [
+          { "in": "query", "name": "page",     "type": "integer", "default": 1 },
+          { "in": "query", "name": "limit",    "type": "integer", "default": 10 },
+          { "in": "query", "name": "verified", "type": "boolean" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated vendor list", "schema": { "$ref": "#/definitions/PaginatedVendors" } }
+        }
+      }
+    },
+    "/api/vendors/{id}": {
+      "get": {
+        "tags": ["Vendors"],
+        "summary": "Get a vendor by vendorId",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Vendor found", "schema": { "$ref": "#/definitions/Vendor" } },
+          "404": { "description": "Vendor not found" }
+        }
+      },
+      "put": {
+        "tags": ["Vendors"],
+        "summary": "Update vendor details",
+        "parameters": [
+          { "in": "path",  "name": "id",   "required": true, "type": "string" },
+          { "in": "body",  "name": "body", "schema": { "$ref": "#/definitions/VendorRegisterBody" } }
+        ],
+        "responses": {
+          "200": { "description": "Vendor updated", "schema": { "$ref": "#/definitions/Vendor" } },
+          "404": { "description": "Vendor not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Vendors"],
+        "summary": "Delete a vendor and their products",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Vendor deleted" },
+          "404": { "description": "Vendor not found" }
+        }
+      }
+    },
+    "/api/vendors/verify/{id}": {
+      "patch": {
+        "tags": ["Vendors"],
+        "summary": "Verify a vendor (admin only)",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Vendor verified", "schema": { "$ref": "#/definitions/Vendor" } },
+          "404": { "description": "Vendor not found" }
+        }
+      }
+    },
+    "/api/vendors/{vendorId}/products": {
+      "get": {
+        "tags": ["Vendors"],
+        "summary": "Get all products for a specific vendor",
+        "parameters": [{ "in": "path", "name": "vendorId", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Vendor with products list" },
+          "404": { "description": "Vendor not found" }
+        }
+      }
+    },
+    "/api/products": {
+      "post": {
+        "tags": ["Products"],
+        "summary": "Create a new product",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/ProductBody" }
+        }],
+        "responses": {
+          "201": { "description": "Product created", "schema": { "$ref": "#/definitions/Product" } },
+          "400": { "description": "Request body missing" }
+        }
+      },
+      "get": {
+        "tags": ["Products"],
+        "summary": "Get all products",
+        "responses": {
+          "200": { "description": "All products" }
+        }
+      }
+    },
+    "/api/products/low-stock": {
+      "get": {
+        "tags": ["Products"],
+        "summary": "Get products with stock ≤ 5",
+        "responses": {
+          "200": { "description": "Low stock products" }
+        }
+      }
+    },
+    "/api/products/bulk-stock": {
+      "put": {
+        "tags": ["Products"],
+        "summary": "Bulk update stock for multiple products",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/BulkStockBody" }
+        }],
+        "responses": {
+          "200": { "description": "Stock updated" }
+        }
+      }
+    },
+    "/api/products/vendor/{vendorId}": {
+      "get": {
+        "tags": ["Products"],
+        "summary": "Get all products by vendor MongoDB ObjectId",
+        "parameters": [{ "in": "path", "name": "vendorId", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Products list" }
+        }
+      }
+    },
+    "/api/products/{id}": {
+      "get": {
+        "tags": ["Products"],
+        "summary": "Get a product by ID",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Product found", "schema": { "$ref": "#/definitions/Product" } },
+          "404": { "description": "Product not found" }
+        }
+      },
+      "put": {
+        "tags": ["Products"],
+        "summary": "Update a product",
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "type": "string" },
+          { "in": "body", "name": "body", "schema": { "$ref": "#/definitions/ProductBody" } }
+        ],
+        "responses": {
+          "200": { "description": "Updated product", "schema": { "$ref": "#/definitions/Product" } }
+        }
+      },
+      "delete": {
+        "tags": ["Products"],
+        "summary": "Delete a product",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Product deleted" }
+        }
+      }
+    },
+    "/api/categories": {
+      "post": {
+        "tags": ["Categories"],
+        "summary": "Create a new category (with optional image upload)",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          { "in": "formData", "name": "name",   "required": true, "type": "string" },
+          { "in": "formData", "name": "parent", "type": "string" },
+          { "in": "formData", "name": "image",  "type": "file" }
+        ],
+        "responses": {
+          "201": { "description": "Category created", "schema": { "$ref": "#/definitions/Category" } }
+        }
+      },
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Get all categories",
+        "responses": {
+          "200": { "description": "All categories" }
+        }
+      }
+    },
+    "/api/categories/category/{categoryId}": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Get all products in a category",
+        "parameters": [{ "in": "path", "name": "categoryId", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Products in category" },
+          "404": { "description": "Category not found" }
+        }
+      }
+    },
+    "/api/categories/{id}": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Get a category by ID",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Category found", "schema": { "$ref": "#/definitions/Category" } },
+          "404": { "description": "Category not found" }
+        }
+      },
+      "put": {
+        "tags": ["Categories"],
+        "summary": "Update a category",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          { "in": "path",     "name": "id",    "required": true, "type": "string" },
+          { "in": "formData", "name": "name",  "type": "string" },
+          { "in": "formData", "name": "image", "type": "file" }
+        ],
+        "responses": {
+          "200": { "description": "Updated category", "schema": { "$ref": "#/definitions/Category" } }
+        }
+      },
+      "delete": {
+        "tags": ["Categories"],
+        "summary": "Delete a category",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Category deleted" }
+        }
+      }
+    },
+    "/api/orders": {
+      "post": {
+        "tags": ["Orders"],
+        "summary": "Create an order from the customer cart",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/CreateOrderBody" }
+        }],
+        "responses": {
+          "200": { "description": "Order created", "schema": { "$ref": "#/definitions/Order" } },
+          "400": { "description": "Cart empty or item out of stock" },
+          "404": { "description": "Address or product not found" }
+        }
+      },
+      "get": {
+        "tags": ["Orders"],
+        "summary": "Get all orders",
+        "responses": {
+          "200": { "description": "All orders" }
+        }
+      }
+    },
+    "/api/orders/user/{userId}": {
+      "get": {
+        "tags": ["Orders"],
+        "summary": "Get all orders for a customer",
+        "parameters": [{ "in": "path", "name": "userId", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Customer orders" }
+        }
+      }
+    },
+    "/api/orders/status/{status}": {
+      "get": {
+        "tags": ["Orders"],
+        "summary": "Get orders by status",
+        "parameters": [{
+          "in": "path", "name": "status", "required": true, "type": "string",
+          "enum": ["Pending","Processing","Shipped","Delivered","Cancelled"]
+        }],
+        "responses": {
+          "200": { "description": "Orders with given status" }
+        }
+      }
+    },
+    "/api/orders/vendor/{vendorId}": {
+      "get": {
+        "tags": ["Orders"],
+        "summary": "Get orders containing items from a specific vendor",
+        "parameters": [{ "in": "path", "name": "vendorId", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Vendor orders" }
+        }
+      }
+    },
+    "/api/orders/{id}": {
+      "get": {
+        "tags": ["Orders"],
+        "summary": "Get an order by ID",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Order found", "schema": { "$ref": "#/definitions/Order" } },
+          "404": { "description": "Order not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Orders"],
+        "summary": "Delete an order",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Order deleted" }
+        }
+      }
+    },
+    "/api/orders/status/{id}": {
+      "patch": {
+        "tags": ["Orders"],
+        "summary": "Update order status",
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "type": "string" },
+          { "in": "body", "name": "body", "required": true, "schema": { "$ref": "#/definitions/UpdateStatusBody" } }
+        ],
+        "responses": {
+          "200": { "description": "Order status updated", "schema": { "$ref": "#/definitions/Order" } }
+        }
+      }
+    },
+    "/api/orders/payment-status/{id}": {
+      "patch": {
+        "tags": ["Orders"],
+        "summary": "Update payment status of an order",
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "type": "string" },
+          { "in": "body", "name": "body", "required": true, "schema": { "$ref": "#/definitions/UpdatePaymentStatusBody" } }
+        ],
+        "responses": {
+          "200": { "description": "Payment status updated", "schema": { "$ref": "#/definitions/Order" } }
+        }
+      }
+    },
+    "/api/cart/add": {
+      "post": {
+        "tags": ["Cart"],
+        "summary": "Add a product to the cart",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/AddToCartBody" }
+        }],
+        "responses": {
+          "200": { "description": "Cart updated" },
+          "404": { "description": "Product not found" }
+        }
+      }
+    },
+    "/api/cart": {
+      "get": {
+        "tags": ["Cart"],
+        "summary": "Get all carts (admin)",
+        "responses": {
+          "200": { "description": "All carts" }
+        }
+      }
+    },
+    "/api/cart/{id}": {
+      "get": {
+        "tags": ["Cart"],
+        "summary": "Get cart for a specific customer",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "type": "string", "description": "Customer ObjectId" }],
+        "responses": {
+          "200": { "description": "Customer cart", "schema": { "$ref": "#/definitions/Cart" } }
+        }
+      }
+    },
+    "/api/cart/clear": {
+      "delete": {
+        "tags": ["Cart"],
+        "summary": "Clear the authenticated customer cart",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Cart cleared" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/cart/remove/{productId}": {
+      "patch": {
+        "tags": ["Cart"],
+        "summary": "Remove a product from the cart",
+        "parameters": [
+          { "in": "path", "name": "productId", "required": true, "type": "string" },
+          { "in": "body", "name": "body", "required": true, "schema": { "example": { "user": { "id": "64f1a2b3c4d5e6f7a8b9c0d1" } } } }
+        ],
+        "responses": {
+          "200": { "description": "Item removed" },
+          "404": { "description": "Cart or product not found" }
+        }
+      }
+    },
+    "/api/addresses": {
+      "post": {
+        "tags": ["Addresses"],
+        "summary": "Add a new address",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/AddressBody" }
+        }],
+        "responses": {
+          "200": { "description": "Address saved", "schema": { "$ref": "#/definitions/Address" } },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/api/addresses/my/{customerId}": {
+      "get": {
+        "tags": ["Addresses"],
+        "summary": "Get all addresses for a customer",
+        "parameters": [{ "in": "path", "name": "customerId", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Customer addresses" }
+        }
+      }
+    },
+    "/api/addresses/{id}": {
+      "delete": {
+        "tags": ["Addresses"],
+        "summary": "Delete an address",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Address deleted" }
+        }
+      }
+    },
+    "/api/wishlist/add/{productId}": {
+      "post": {
+        "tags": ["Wishlist"],
+        "summary": "Add a product to the wishlist",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "in": "path", "name": "productId", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Added to wishlist" },
+          "404": { "description": "Product not found" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/wishlist": {
+      "get": {
+        "tags": ["Wishlist"],
+        "summary": "Get the authenticated customer wishlist",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Wishlist with populated products" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/wishlist/remove/{productId}": {
+      "delete": {
+        "tags": ["Wishlist"],
+        "summary": "Remove a product from the wishlist",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "in": "path", "name": "productId", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Removed from wishlist" },
+          "404": { "description": "Wishlist empty" }
+        }
+      }
+    },
+    "/api/payment/create/{orderId}": {
+      "post": {
+        "tags": ["Payment"],
+        "summary": "Create a Razorpay payment order",
+        "parameters": [{ "in": "path", "name": "orderId", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Razorpay order created", "schema": { "$ref": "#/definitions/PaymentOrderResponse" } },
+          "404": { "description": "Order not found" }
+        }
+      }
+    },
+    "/api/payment/verify": {
+      "post": {
+        "tags": ["Payment"],
+        "summary": "Verify a Razorpay payment signature",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/VerifyPaymentBody" }
+        }],
+        "responses": {
+          "200": { "description": "Payment verified, order confirmed" },
+          "400": { "description": "Signature mismatch" }
+        }
+      }
+    },
+    "/api/payment/failed": {
+      "post": {
+        "tags": ["Payment"],
+        "summary": "Mark a payment as failed",
+        "parameters": [{ "in": "body", "name": "body", "required": true, "schema": { "example": { "orderId": "64f1a2b3c4d5e6f7a8b9c0f1" } } }],
+        "responses": {
+          "200": { "description": "Payment marked failed" }
+        }
+      }
+    },
+    "/api/payment/refund/{paymentId}": {
+      "post": {
+        "tags": ["Payment"],
+        "summary": "Initiate a refund for a Razorpay payment",
+        "parameters": [
+          { "in": "path", "name": "paymentId", "required": true, "type": "string" },
+          { "in": "body", "name": "body", "required": true, "schema": { "$ref": "#/definitions/RefundBody" } }
+        ],
+        "responses": {
+          "200": { "description": "Refund initiated" },
+          "500": { "description": "Refund failed" }
+        }
+      }
+    },
+    "/api/payment/retry/{orderId}": {
+      "post": {
+        "tags": ["Payment"],
+        "summary": "Retry payment for an existing order",
+        "parameters": [{ "in": "path", "name": "orderId", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "New Razorpay order for retry", "schema": { "$ref": "#/definitions/PaymentOrderResponse" } },
+          "404": { "description": "Order not found" }
+        }
+      }
+    },
+    "/api/webhook/razorpay": {
+      "post": {
+        "tags": ["Webhooks"],
+        "summary": "Razorpay webhook — payment.captured event",
+        "description": "Called by Razorpay when a payment is captured. Verifies HMAC signature and updates order payment status.",
+        "parameters": [{ "in": "header", "name": "x-razorpay-signature", "required": true, "type": "string" }],
+        "responses": {
+          "200": { "description": "Webhook processed", "schema": { "example": { "status": "ok" } } },
+          "400": { "description": "Invalid webhook signature" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "CustomerRegisterBody": {
+      "type": "object",
+      "required": ["name","email","password"],
+      "properties": {
+        "name":     { "type": "string",  "example": "Jane Doe" },
+        "email":    { "type": "string",  "example": "jane@example.com" },
+        "password": { "type": "string",  "example": "secret123" },
+        "phone":    { "type": "string",  "example": "9876543210" }
+      }
+    },
+    "CustomerLoginBody": {
+      "type": "object",
+      "required": ["email","password"],
+      "properties": {
+        "email":    { "type": "string", "example": "jane@example.com" },
+        "password": { "type": "string", "example": "secret123" }
+      }
+    },
+    "CustomerLoginResponse": {
+      "type": "object",
+      "properties": {
+        "token": { "type": "string" },
+        "user":  { "$ref": "#/definitions/Customer" }
+      }
+    },
+    "Customer": {
+      "type": "object",
+      "properties": {
+        "_id":   { "type": "string" },
+        "name":  { "type": "string", "example": "Jane Doe" },
+        "email": { "type": "string", "example": "jane@example.com" },
+        "phone": { "type": "string", "example": "9876543210" }
+      }
+    },
+    "VendorRegisterBody": {
+      "type": "object",
+      "required": ["name","shopName","email","password","phone","address","tradeLicense","aadhaarCard","panCard"],
+      "properties": {
+        "name":         { "type": "string", "example": "Rahul Sharma" },
+        "shopName":     { "type": "string", "example": "Rahul Handicrafts" },
+        "email":        { "type": "string", "example": "rahul@shop.com" },
+        "password":     { "type": "string", "example": "pass1234" },
+        "phone":        { "type": "string", "example": "9123456789" },
+        "address":      { "type": "string", "example": "12 MG Road, Mumbai" },
+        "description":  { "type": "string" },
+        "logo":         { "type": "string" },
+        "banner":       { "type": "string" },
+        "tradeLicense": { "type": "string" },
+        "aadhaarCard":  { "type": "string" },
+        "panCard":      { "type": "string" },
+        "otherDoc":     { "type": "string" }
+      }
+    },
+    "VendorLoginBody": {
+      "type": "object",
+      "required": ["email","password"],
+      "properties": {
+        "email":    { "type": "string", "example": "rahul@shop.com" },
+        "password": { "type": "string", "example": "pass1234" }
+      }
+    },
+    "VendorLoginResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "msg":     { "type": "string" },
+        "token":   { "type": "string" },
+        "vendor":  { "$ref": "#/definitions/Vendor" }
+      }
+    },
+    "Vendor": {
+      "type": "object",
+      "properties": {
+        "vendorId":    { "type": "string", "example": "VEND-20241A2B3C" },
+        "name":        { "type": "string" },
+        "shopName":    { "type": "string" },
+        "email":       { "type": "string" },
+        "phone":       { "type": "string" },
+        "address":     { "type": "string" },
+        "description": { "type": "string" },
+        "logo":        { "type": "string" },
+        "banner":      { "type": "string" },
+        "isVerified":  { "type": "boolean" },
+        "documents": {
+          "type": "object",
+          "properties": {
+            "tradeLicense": { "type": "string" },
+            "aadhaarCard":  { "type": "string" },
+            "panCard":      { "type": "string" }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "VendorAnalytics": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "analytics": {
+          "type": "object",
+          "properties": {
+            "totalVendors":  { "type": "integer" },
+            "verified":      { "type": "integer" },
+            "pending":       { "type": "integer" },
+            "totalProducts": { "type": "integer" }
+          }
+        }
+      }
+    },
+    "PaginatedVendors": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "vendors": { "type": "array", "items": { "$ref": "#/definitions/Vendor" } },
+        "pagination": {
+          "type": "object",
+          "properties": {
+            "total": { "type": "integer" },
+            "page":  { "type": "integer" },
+            "limit": { "type": "integer" },
+            "pages": { "type": "integer" }
+          }
+        }
+      }
+    },
+    "ProductBody": {
+      "type": "object",
+      "required": ["name","price","stock","district","vendor"],
+      "properties": {
+        "name":          { "type": "string",  "example": "Handwoven Silk Saree" },
+        "description":   { "type": "string" },
+        "price":         { "type": "number",  "example": 4500 },
+        "originalPrice": { "type": "number",  "example": 5500 },
+        "stock":         { "type": "integer", "example": 20 },
+        "district":      { "type": "string",  "example": "Varanasi" },
+        "category":      { "type": "string",  "example": "64f1a2b3c4d5e6f7a8b9c0d2" },
+        "vendor":        { "type": "string",  "example": "64f1a2b3c4d5e6f7a8b9c0d3" },
+        "images":        { "type": "array",   "items": { "type": "string" } }
+      }
+    },
+    "Product": {
+      "type": "object",
+      "properties": {
+        "_id":         { "type": "string" },
+        "name":        { "type": "string" },
+        "description": { "type": "string" },
+        "price":       { "type": "number" },
+        "orginalPrice":{ "type": "number" },
+        "stock":       { "type": "integer" },
+        "district":    { "type": "string" },
+        "images":      { "type": "array", "items": { "type": "string" } },
+        "isActive":    { "type": "boolean" },
+        "category":    { "type": "object" },
+        "vendor":      { "type": "object" },
+        "createdAt":   { "type": "string", "format": "date-time" }
+      }
+    },
+    "BulkStockBody": {
+      "type": "object",
+      "required": ["productIds","stock"],
+      "properties": {
+        "productIds": { "type": "array", "items": { "type": "string" } },
+        "stock":      { "type": "integer", "example": 50 }
+      }
+    },
+    "Category": {
+      "type": "object",
+      "properties": {
+        "_id":      { "type": "string" },
+        "name":     { "type": "string", "example": "Sarees" },
+        "slug":     { "type": "string", "example": "sarees" },
+        "image":    { "type": "string" },
+        "parent":   { "type": "string", "nullable": true },
+        "isActive": { "type": "boolean" }
+      }
+    },
+    "CreateOrderBody": {
+      "type": "object",
+      "required": ["user_id","addressId","PaymentMethod"],
+      "properties": {
+        "user_id":       { "type": "string", "example": "64f1a2b3c4d5e6f7a8b9c0d1" },
+        "addressId":     { "type": "string", "example": "64f1a2b3c4d5e6f7a8b9c0e1" },
+        "PaymentMethod": { "type": "string", "enum": ["COD","Online"], "example": "Online" }
+      }
+    },
+    "Order": {
+      "type": "object",
+      "properties": {
+        "_id":           { "type": "string" },
+        "user":          { "type": "string" },
+        "items":         { "type": "array" },
+        "totalAmount":   { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["COD","Online"] },
+        "paymentStatus": { "type": "string", "enum": ["Pending","Paid","Failed"] },
+        "status":        { "type": "string", "enum": ["Pending","Processing","Shipped","Delivered","Cancelled"] },
+        "createdAt":     { "type": "string", "format": "date-time" }
+      }
+    },
+    "UpdateStatusBody": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "enum": ["Pending","Processing","Shipped","Delivered","Cancelled"] }
+      }
+    },
+    "UpdatePaymentStatusBody": {
+      "type": "object",
+      "properties": {
+        "paymentStatus": { "type": "string", "enum": ["Pending","Paid","Failed"] }
+      }
+    },
+    "AddToCartBody": {
+      "type": "object",
+      "required": ["productId","quantity","user"],
+      "properties": {
+        "productId": { "type": "string" },
+        "quantity":  { "type": "integer", "example": 2 },
+        "user":      { "type": "object", "properties": { "id": { "type": "string" } } }
+      }
+    },
+    "Cart": {
+      "type": "object",
+      "properties": {
+        "_id":         { "type": "string" },
+        "customer":    { "type": "string" },
+        "items":       { "type": "array" },
+        "totalAmount": { "type": "number" }
+      }
+    },
+    "AddressBody": {
+      "type": "object",
+      "properties": {
+        "customer":  { "type": "string" },
+        "fullName":  { "type": "string", "example": "Jane Doe" },
+        "phone":     { "type": "string", "example": "9876543210" },
+        "pincode":   { "type": "string", "example": "110001" },
+        "state":     { "type": "string", "example": "Delhi" },
+        "city":      { "type": "string", "example": "New Delhi" },
+        "area":      { "type": "string", "example": "Connaught Place" },
+        "houseNo":   { "type": "string", "example": "Flat 101, Block A" },
+        "landmark":  { "type": "string", "example": "Near Metro Station" }
+      }
+    },
+    "Address": {
+      "type": "object",
+      "properties": {
+        "_id":      { "type": "string" },
+        "customer": { "type": "string" },
+        "fullName": { "type": "string" },
+        "phone":    { "type": "string" },
+        "pincode":  { "type": "string" },
+        "state":    { "type": "string" },
+        "city":     { "type": "string" },
+        "area":     { "type": "string" },
+        "houseNo":  { "type": "string" },
+        "landmark": { "type": "string" }
+      }
+    },
+    "PaymentOrderResponse": {
+      "type": "object",
+      "properties": {
+        "success":    { "type": "boolean" },
+        "key":        { "type": "string", "example": "rzp_live_xxxxxxxxxxxx" },
+        "razorOrder": {
+          "type": "object",
+          "properties": {
+            "id":       { "type": "string" },
+            "amount":   { "type": "integer" },
+            "currency": { "type": "string" },
+            "status":   { "type": "string" }
+          }
+        }
+      }
+    },
+    "VerifyPaymentBody": {
+      "type": "object",
+      "required": ["razorpay_order_id","razorpay_payment_id","razorpay_signature","orderId"],
+      "properties": {
+        "razorpay_order_id":   { "type": "string" },
+        "razorpay_payment_id": { "type": "string" },
+        "razorpay_signature":  { "type": "string" },
+        "orderId":             { "type": "string" }
+      }
+    },
+    "RefundBody": {
+      "type": "object",
+      "required": ["amount"],
+      "properties": {
+        "amount": { "type": "number", "example": 4500 }
+      }
+    },
+    "SuccessMessage": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "msg":     { "type": "string" }
+      }
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "error":   { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,56 +1,32 @@
 const express = require("express");
 const router = express.Router();
-const Customer = require("../models/Customer");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const { registerCustomer, loginCustomer } = require("../controllers/customerAuthController");
 
-
-// REGISTER
-
-
-router.post("/register", async (req, res) => {
-  try {
-    const { name, email, password, phone } = req.body;
-    console.log(req.body)
-
-    let user = await Customer.findOne({ email });
-    if (user) return res.status(400).json({ msg: "Email exists" });
-
-    const hashed = await bcrypt.hash(password, 10);
-
-    user = new Customer({
-      name, email, phone,
-      password: hashed
-    });
-
-    await user.save();
-
-    res.json({ msg: "Customer Registered" });
-  } catch (err) {
-    res.status(500).json({msg:"error", error: err.message });
+router.post("/register", registerCustomer);
+/*
+  #swagger.tags = ['Auth']
+  #swagger.summary = 'Register a new customer'
+  #swagger.parameters['body'] = {
+    in: 'body',
+    required: true,
+    schema: { $ref: '#/definitions/CustomerRegisterBody' }
   }
-});
+  #swagger.responses[200] = { description: 'Customer registered successfully', schema: { msg: 'Customer Registered' } }
+  #swagger.responses[400] = { description: 'Email already exists' }
+  #swagger.responses[500] = { description: 'Server error' }
+*/
 
-
-// LOGIN
-
-
-router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  const user = await Customer.findOne({ email });
-  if (!user) return res.status(400).json({ msg: "Invalid email" });
-
-  const ok = await bcrypt.compare(password, user.password);
-  if (!ok) return res.status(400).json({ msg: "Wrong password" });
-
-  const token = jwt.sign(
-    { id: user._id },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
-  );
-
-  res.json({ token, user });
-});
+router.post("/login", loginCustomer);
+/*
+  #swagger.tags = ['Auth']
+  #swagger.summary = 'Customer login'
+  #swagger.parameters['body'] = {
+    in: 'body',
+    required: true,
+    schema: { $ref: '#/definitions/CustomerLoginBody' }
+  }
+  #swagger.responses[200] = { description: 'Login successful', schema: { $ref: '#/definitions/CustomerLoginResponse' } }
+  #swagger.responses[400] = { description: 'Invalid credentials' }
+*/
 
 module.exports = router;

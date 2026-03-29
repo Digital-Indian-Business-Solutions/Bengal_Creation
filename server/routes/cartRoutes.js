@@ -1,136 +1,53 @@
 const express = require("express");
 const router = express.Router();
-const Cart = require("../models/Cart");
-const Product = require("../models/product");
+const { addToCart, getCart, clearCart, removeFromCart, getAllCarts } = require("../controllers/cartController");
 const auth = require("../middleware/customerAuth");
-const Vendor = require("../models/vendor");
 
-// ADD TO CART
-router.post("/add", async (req, res) => {
-  try {
-    const { productId, quantity, user } = req.body;
-
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ msg: "Product not found" });
-    }
-
-    const userId = user.id;
-
-    let cart = await Cart.findOne({ customer: userId });
-
-    if (!cart) {
-      cart = new Cart({
-        customer: userId,
-        items: [],
-        totalAmount: 0,
-      });
-    }
-
-    // 🔥 CHECK IF PRODUCT ALREADY EXISTS
-    const existingItem = cart.items.find(
-      (item) => item.product.toString() === productId,
-    );
-
-    if (existingItem) {
-      // ✅ Increase quantity
-      existingItem.quantity += quantity;
-
-      // ✅ Update totalAmount
-      cart.totalAmount += product.price * quantity;
-    } else {
-      // ✅ Add new item
-      cart.items.push({
-        product: productId,
-        vendorId: product.vendor,
-        quantity,
-        price: product.price,
-      });
-
-      cart.totalAmount += product.price * quantity;
-    }
-
-    await cart.save();
-
-    // Optional: populate product details
-    await cart.populate("items.product");
-
-    res.json({ msg: "Cart updated", cart });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Server error" });
+router.post("/add", addToCart);
+/*
+  #swagger.tags = ['Cart']
+  #swagger.summary = 'Add a product to the cart'
+  #swagger.parameters['body'] = {
+    in: 'body',
+    required: true,
+    schema: { $ref: '#/definitions/AddToCartBody' }
   }
-});
-// GET CART
+  #swagger.responses[200] = { description: 'Cart updated', schema: { msg: 'Cart updated', cart: { $ref: '#/definitions/Cart' } } }
+  #swagger.responses[404] = { description: 'Product not found' }
+*/
 
-router.get("/:id", async (req, res) => {
-  const cart = await Cart.findOne({ customer: req.params.id }).populate(
-    "items.product",
-  );
+router.get("/", getAllCarts);
+/*
+  #swagger.tags = ['Cart']
+  #swagger.summary = 'Get all carts (admin — includes customer and product details)'
+  #swagger.responses[200] = { description: 'All carts', schema: [{ $ref: '#/definitions/Cart' }] }
+*/
 
-  res.json(cart);
-});
+router.get("/:id", getCart);
+/*
+  #swagger.tags = ['Cart']
+  #swagger.summary = 'Get cart for a specific customer'
+  #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'Customer ObjectId' }
+  #swagger.responses[200] = { description: 'Customer cart', schema: { $ref: '#/definitions/Cart' } }
+*/
 
-// CLEAR CART
+router.delete("/clear", auth, clearCart);
+/*
+  #swagger.tags = ['Cart']
+  #swagger.summary = 'Clear the authenticated customer cart'
+  #swagger.security = [{ BearerAuth: [] }]
+  #swagger.responses[200] = { description: 'Cart cleared', schema: { msg: 'Cart cleared' } }
+  #swagger.responses[401] = { description: 'Unauthorized' }
+*/
 
-router.delete("/clear", auth, async (req, res) => {
-  await Cart.findOneAndDelete({ customer: req.body.user.id });
-  res.json({ msg: "Cart cleared" });
-});
-router.patch("/remove/:productId", async (req, res) => {
-  try {
-    console.log(req.body);
-    const { productId } = req.params;
-    const userId = req.body.user.id;
+router.patch("/remove/:productId", removeFromCart);
+/*
+  #swagger.tags = ['Cart']
+  #swagger.summary = 'Remove a product from the cart'
+  #swagger.parameters['productId'] = { in: 'path', required: true, type: 'string' }
+  #swagger.parameters['body'] = { in: 'body', required: true, schema: { user: { id: '64f1a2b3c4d5e6f7a8b9c0d1' } } }
+  #swagger.responses[200] = { description: 'Item removed', schema: { msg: 'Item removed', cart: { $ref: '#/definitions/Cart' } } }
+  #swagger.responses[404] = { description: 'Cart or product not found' }
+*/
 
-    const cart = await Cart.findOne({ customer: userId });
-
-    if (!cart) {
-      return res.status(404).json({ msg: "Cart not found" });
-    }
-
-    // 🔥 Find item to remove
-    const itemIndex = cart.items.findIndex(
-      (item) => item.product.toString() === productId,
-    );
-
-    if (itemIndex === -1) {
-      return res.status(404).json({ msg: "Product not in cart" });
-    }
-
-    // 🔥 Remove item
-    cart.items.splice(itemIndex, 1);
-
-    // 🔥 Recalculate totalAmount
-    cart.totalAmount = cart.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0,
-    );
-
-    await cart.save();
-
-    res.json({ msg: "Item removed", cart });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Server error" });
-  }
-});
-// all user details with products
-router.get("/", async (req, res) => {
-  try {
-    const carts = await Cart.find()
-      .populate("customer")
-      .populate({
-        path: "items.product",
-        populate: {
-          path: "vendor",
-          model: "Vendor"
-        }
-      });
-
-    res.json(carts);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 module.exports = router;

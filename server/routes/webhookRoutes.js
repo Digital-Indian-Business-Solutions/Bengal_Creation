@@ -1,34 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const crypto = require("crypto");
-const Order = require("../models/order");
+const { razorpayWebhook } = require("../controllers/webhookController");
 
-router.post("/razorpay", express.json({ type: "*/*" }), async (req, res) => {
+router.post("/razorpay", express.json({ type: "*/*" }), razorpayWebhook);
+/*
+  #swagger.tags = ['Webhooks']
+  #swagger.summary = 'Razorpay webhook — payment.captured event'
+  #swagger.description = 'Called by Razorpay when a payment is captured. Verifies HMAC signature and updates order payment status.'
+  #swagger.parameters['x-razorpay-signature'] = { in: 'header', required: true, type: 'string' }
+  #swagger.responses[200] = { description: 'Webhook processed', schema: { status: 'ok' } }
+  #swagger.responses[400] = { description: 'Invalid webhook signature' }
+*/
 
-  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-
-  const signature = req.headers["x-razorpay-signature"];
-
-  const expected = crypto
-    .createHmac("sha256", secret)
-    .update(JSON.stringify(req.body))
-    .digest("hex");
-
-  if (signature !== expected)
-    return res.status(400).send("Invalid webhook");
-
-  const event = req.body.event;
-
-  if (event === "payment.captured") {
-
-    const payment = req.body.payload.payment.entity;
-
-    await Order.findOneAndUpdate(
-      { razorpayOrderId: payment.order_id },
-      { paymentStatus: "paid" }
-    );
-  }
-
-  res.json({ status: "ok" });
-});
 module.exports = router;

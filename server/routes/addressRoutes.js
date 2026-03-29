@@ -1,65 +1,34 @@
 const express = require("express");
 const router = express.Router();
-const Address = require("../models/address");
+const { addAddress, getAddressesByCustomer, deleteAddress } = require("../controllers/addressController");
 
-
-// ADD ADDRESS
-router.post("/", async (req, res) => {
-  try {
-
-    const addr = new Address({
-      customer: req.body.customer,
-      fullName: req.body.fullName,
-      phone: req.body.phone,
-      pincode: req.body.pincode,
-      state: req.body.state,
-      city: req.body.city,
-      area: req.body.area,
-      houseNo: req.body.houseNo,
-      landmark: req.body.landmark
-    });
-
-    await addr.save();
-
-    res.json(addr);
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+router.post("/", addAddress);
+/*
+  #swagger.tags = ['Addresses']
+  #swagger.summary = 'Add a new address'
+  #swagger.parameters['body'] = {
+    in: 'body',
+    required: true,
+    schema: { $ref: '#/definitions/AddressBody' }
   }
-});
+  #swagger.responses[200] = { description: 'Address saved', schema: { $ref: '#/definitions/Address' } }
+  #swagger.responses[500] = { description: 'Server error' }
+*/
 
+router.get("/my/:customerId", getAddressesByCustomer);
+/*
+  #swagger.tags = ['Addresses']
+  #swagger.summary = 'Get all addresses for a customer'
+  #swagger.parameters['customerId'] = { in: 'path', required: true, type: 'string' }
+  #swagger.responses[200] = { description: 'Customer addresses', schema: [{ $ref: '#/definitions/Address' }] }
+*/
 
-// GET USER ADDRESSES
-router.get("/my/:customerId", async (req, res) => {
-
-  try {
-
-    const addresses = await Address.find({
-      customer: req.params.customerId
-    });
-
-    res.json(addresses);
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-
-});
-
-
-// DELETE ADDRESS
-router.delete("/:id", async (req, res) => {
-
-  try {
-
-    await Address.findByIdAndDelete(req.params.id);
-
-    res.json({ msg: "Deleted" });
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-
-});
+router.delete("/:id", deleteAddress);
+/*
+  #swagger.tags = ['Addresses']
+  #swagger.summary = 'Delete an address'
+  #swagger.parameters['id'] = { in: 'path', required: true, type: 'string' }
+  #swagger.responses[200] = { description: 'Address deleted', schema: { msg: 'Deleted' } }
+*/
 
 module.exports = router;

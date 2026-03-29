@@ -6,7 +6,7 @@ const vendorShopName = process.env.VENDOR_SHOP_NAME;
 const vendorOwnerName = process.env.VENDOR_OWNER_NAME;
 const vendorPassword = process.env.VENDOR_PASSWORD;
 const vendorPhoneNumber = process.env.VENDOR_PHONE_NO;
-export  const seedVendorAndProducts = async () => {
+const seedVendorAndProducts = async () => {
   try {
     console.log("🌱 Seeding vendor & products...");
 
@@ -1407,7 +1407,7 @@ const productsData = [
 };
 
 // Auto category creation function
-export const seedCategories = async () => {
+const seedCategories = async () => {
   try {
     const exists = await Category.findOne();
 
@@ -1451,3 +1451,4 @@ export const seedCategories = async () => {
     console.error("Error seeding categories:", error);
   }
 };
+module.exports = { seedCategories,seedVendorAndProducts };

@@ -1,192 +1,60 @@
 const express = require("express");
 const router = express.Router();
-const razorpay = require("../utils/razorpay");
-const Order = require("../models/order");
-const crypto = require("crypto");
+const {
+  createPaymentOrder,
+  verifyPayment,
+  markPaymentFailed,
+  refundPayment,
+  retryPayment,
+} = require("../controllers/paymentController");
 
+router.post("/create/:orderId", createPaymentOrder);
+/*
+  #swagger.tags = ['Payment']
+  #swagger.summary = 'Create a Razorpay payment order'
+  #swagger.parameters['orderId'] = { in: 'path', required: true, type: 'string', description: 'MongoDB Order ID' }
+  #swagger.responses[200] = { description: 'Razorpay order created', schema: { $ref: '#/definitions/PaymentOrderResponse' } }
+  #swagger.responses[404] = { description: 'Order not found' }
+*/
 
-// ==============================
-// CREATE PAYMENT ORDER
-// ==============================
-
-router.post("/create/:orderId", async (req, res) => {
-
-  try {
-
-    const order = await Order.findById(req.params.orderId);
-
-    if (!order) {
-      return res.status(404).json({ msg: "Order not found" });
-    }
-
-    const razorOrder = await razorpay.orders.create({
-      amount: order.totalAmount * 100,
-      currency: "INR",
-      receipt: "order_" + order._id
-    });
-
-    order.razorpayOrderId = razorOrder.id;
-    await order.save();
-
-    res.json({
-      success: true,
-      key: process.env.RAZORPAY_KEY,
-      razorOrder
-    });
-
-  } catch (error) {
-
-    console.error(error);
-    res.status(500).json({ msg: "Payment order creation failed" });
-
+router.post("/verify", verifyPayment);
+/*
+  #swagger.tags = ['Payment']
+  #swagger.summary = 'Verify a Razorpay payment signature'
+  #swagger.parameters['body'] = {
+    in: 'body',
+    required: true,
+    schema: { $ref: '#/definitions/VerifyPaymentBody' }
   }
+  #swagger.responses[200] = { description: 'Payment verified, order confirmed', schema: { $ref: '#/definitions/Order' } }
+  #swagger.responses[400] = { description: 'Signature mismatch — verification failed' }
+*/
 
-});
+router.post("/failed", markPaymentFailed);
+/*
+  #swagger.tags = ['Payment']
+  #swagger.summary = 'Mark a payment as failed'
+  #swagger.parameters['body'] = { in: 'body', required: true, schema: { orderId: '64f1a2b3c4d5e6f7a8b9c0f1' } }
+  #swagger.responses[200] = { description: 'Payment marked failed', schema: { $ref: '#/definitions/SuccessMessage' } }
+*/
 
+router.post("/refund/:paymentId", refundPayment);
+/*
+  #swagger.tags = ['Payment']
+  #swagger.summary = 'Initiate a refund for a Razorpay payment'
+  #swagger.parameters['paymentId'] = { in: 'path', required: true, type: 'string', description: 'Razorpay payment ID' }
+  #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/RefundBody' } }
+  #swagger.responses[200] = { description: 'Refund initiated', schema: { success: true, refund: {} } }
+  #swagger.responses[500] = { description: 'Refund failed' }
+*/
 
-// ==============================
-// VERIFY PAYMENT
-// ==============================
-
-router.post("/verify", async (req, res) => {
-
-  try {
-
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      orderId
-    } = req.body;
-
-    const generatedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_SECRET)
-      .update(razorpay_order_id + "|" + razorpay_payment_id)
-      .digest("hex");
-
-    if (generatedSignature !== razorpay_signature) {
-      return res.status(400).json({ msg: "Payment verification failed" });
-    }
-
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      {
-        razorpayPaymentId: razorpay_payment_id,
-        razorpaySignature: razorpay_signature,
-        paymentStatus: "paid",
-        orderStatus: "confirmed"
-      },
-      { new: true }
-    );
-
-    res.json({
-      success: true,
-      message: "Payment verified",
-      order
-    });
-
-  } catch (error) {
-
-    console.error(error);
-    res.status(500).json({ msg: "Payment verification error" });
-
-  }
-
-});
-
-
-// ==============================
-// PAYMENT FAILED
-// ==============================
-
-router.post("/failed", async (req, res) => {
-
-  try {
-
-    const { orderId } = req.body;
-
-    await Order.findByIdAndUpdate(orderId, {
-      paymentStatus: "failed"
-    });
-
-    res.json({
-      success: true,
-      msg: "Payment marked as failed"
-    });
-
-  } catch (error) {
-
-    res.status(500).json({ msg: "Failed to update order" });
-
-  }
-
-});
-
-
-// ==============================
-// REFUND API
-// ==============================
-
-router.post("/refund/:paymentId", async (req, res) => {
-
-  try {
-
-    const refund = await razorpay.payments.refund(req.params.paymentId, {
-      amount: req.body.amount * 100
-    });
-
-    res.json({
-      success: true,
-      refund
-    });
-
-  } catch (error) {
-
-    console.error(error);
-    res.status(500).json({ msg: "Refund failed" });
-
-  }
-
-});
-
-
-// ==============================
-// RETRY PAYMENT
-// ==============================
-
-router.post("/retry/:orderId", async (req, res) => {
-
-  try {
-
-    const order = await Order.findById(req.params.orderId);
-
-    if (!order) {
-      return res.status(404).json({ msg: "Order not found" });
-    }
-
-    const razorOrder = await razorpay.orders.create({
-      amount: order.totalAmount * 100,
-      currency: "INR",
-      receipt: "retry_" + order._id
-    });
-
-    order.razorpayOrderId = razorOrder.id;
-    order.paymentStatus = "retry";
-
-    await order.save();
-
-    res.json({
-      success: true,
-      key: process.env.RAZORPAY_KEY,
-      razorOrder
-    });
-
-  } catch (error) {
-
-    res.status(500).json({ msg: "Retry payment failed" });
-
-  }
-
-});
+router.post("/retry/:orderId", retryPayment);
+/*
+  #swagger.tags = ['Payment']
+  #swagger.summary = 'Retry payment for an existing order'
+  #swagger.parameters['orderId'] = { in: 'path', required: true, type: 'string' }
+  #swagger.responses[200] = { description: 'New Razorpay order for retry', schema: { $ref: '#/definitions/PaymentOrderResponse' } }
+  #swagger.responses[404] = { description: 'Order not found' }
+*/
 
 module.exports = router;

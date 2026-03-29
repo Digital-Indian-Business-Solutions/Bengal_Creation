@@ -1,121 +1,68 @@
 const express = require("express");
 const router = express.Router();
-const Category = require("../models/category");
-const Vendor = require("../models/vendor");
-const Product = require("../models/product");
-// const upload = require("../middleware/upload");
-const {cloudinarySingle,uploadToCloudinary,upload }=require("../middleware/upload")
+const {
+  createCategory,
+  getAllCategories,
+  getCategoryById,
+  updateCategory,
+  deleteCategory,
+  getProductsByCategory,
+} = require("../controllers/categoryController");
+const { cloudinarySingle } = require("../middleware/upload");
 
-// CREATE CATEGORY
-router.post("/", cloudinarySingle("image"), async (req, res) => {
-    try {
-        console.log("Creating category:", req.body);
-        console.log("Cloudinary file:", req.cloudinaryFile);
+router.post("/", cloudinarySingle("image"), createCategory);
+/*
+  #swagger.tags = ['Categories']
+  #swagger.summary = 'Create a new category (with optional image upload)'
+  #swagger.consumes = ['multipart/form-data']
+  #swagger.parameters['name'] = { in: 'formData', required: true, type: 'string' }
+  #swagger.parameters['parent'] = { in: 'formData', type: 'string', description: 'Parent category ObjectId' }
+  #swagger.parameters['image'] = { in: 'formData', type: 'file', description: 'Category image' }
+  #swagger.responses[201] = { description: 'Category created', schema: { $ref: '#/definitions/Category' } }
+*/
 
-        let imageUrl = null;
+router.get("/category/:categoryId", getProductsByCategory);
+/*
+  #swagger.tags = ['Categories']
+  #swagger.summary = 'Get all products in a category'
+  #swagger.parameters['categoryId'] = { in: 'path', required: true, type: 'string' }
+  #swagger.responses[200] = { description: 'Products in category', schema: [{ $ref: '#/definitions/Product' }] }
+  #swagger.responses[404] = { description: 'Category not found' }
+*/
 
-        // Get image URL from Cloudinary (automatically uploaded by cloudinarySingle middleware)
-        if (req.cloudinaryFile) {
-            imageUrl = req.cloudinaryFile.url;
-        }
+router.get("/", getAllCategories);
+/*
+  #swagger.tags = ['Categories']
+  #swagger.summary = 'Get all categories'
+  #swagger.responses[200] = { description: 'All categories', schema: [{ $ref: '#/definitions/Category' }] }
+*/
 
-        const category = new Category({
-            name: req.body.name,
-            slug: req.body.name.toLowerCase().replace(/ /g, "-"),
-            parent: req.body.parent || null,
-            image: imageUrl
-        });
+router.get("/:id", getCategoryById);
+/*
+  #swagger.tags = ['Categories']
+  #swagger.summary = 'Get a category by ID'
+  #swagger.parameters['id'] = { in: 'path', required: true, type: 'string' }
+  #swagger.responses[200] = { description: 'Category found', schema: { $ref: '#/definitions/Category' } }
+  #swagger.responses[404] = { description: 'Category not found' }
+*/
 
-        await category.save();
+router.put("/:id", cloudinarySingle("image"), updateCategory);
+/*
+  #swagger.tags = ['Categories']
+  #swagger.summary = 'Update a category'
+  #swagger.consumes = ['multipart/form-data']
+  #swagger.parameters['id'] = { in: 'path', required: true, type: 'string' }
+  #swagger.parameters['name'] = { in: 'formData', type: 'string' }
+  #swagger.parameters['image'] = { in: 'formData', type: 'file' }
+  #swagger.responses[200] = { description: 'Updated category', schema: { $ref: '#/definitions/Category' } }
+*/
 
-        res.status(201).json({
-            success: true,
-            message: "Category created successfully",
-            category
-        });
+router.delete("/:id", deleteCategory);
+/*
+  #swagger.tags = ['Categories']
+  #swagger.summary = 'Delete a category'
+  #swagger.parameters['id'] = { in: 'path', required: true, type: 'string' }
+  #swagger.responses[200] = { description: 'Category deleted', schema: { msg: 'Category deleted' } }
+*/
 
-    } catch (err) {
-        console.error("Category creation error:", err);
-        res.status(500).json({ 
-            success: false,
-            error: err.message 
-        });
-    }
-});
-
-// GET ALL CATEGORIES
-
-
-router.get("/", async (req, res) => {
-    console.log(req)
-    const categories = await Category.find().populate("parent", "name");
-    res.json(categories);
-});
-
-
-// GET CATEGORY BY ID
-
-
-router.get("/:id", async (req, res) => {
-    const category = await Category.findById(req.params.id)
-        .populate("parent", "name");
-
-    if (!category)
-        return res.status(404).json({ msg: "Category not found" });
-
-    res.json(category);
-});
-
-
-
-// UPDATE CATEGORY
-
-
-router.put("/:id",  cloudinarySingle("image"), async (req, res) => {
-    try {
-
-        let updateData = req.body;
-
-        if (req.file) {
-            const result = await uploadImage(req.file.path);
-            updateData.image = result.secure_url;
-        }
-
-        const category = await Category.findByIdAndUpdate(
-            req.params.id,
-            updateData,
-            { new: true }
-        );
-
-        res.json(category);
-
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-
-// DELETE CATEGORY
-
-
-router.delete("/:id", async (req, res) => {
-    await Category.findByIdAndDelete(req.params.id);
-    res.json({ msg: "Category deleted" });
-});
-
-// GET PRODUCTS BY CATEGORY
-
-router.get("/category/:categoryId", async (req, res) => {
-    try {
-        const category = await Category.findById(req.params.categoryId);
-        if (!category) return res.status(404).json({ msg: "Category not found" });
-        const products = await Product.find({ category: req.params.categoryId })
-            .populate("vendor", "shopName")
-            .populate("category", "name");
-        
-        res.json(products);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
 module.exports = router;

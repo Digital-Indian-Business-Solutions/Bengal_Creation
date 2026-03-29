@@ -1,61 +1,35 @@
 const express = require("express");
 const router = express.Router();
-const Wishlist = require("../models/Wishlist");
-const Product = require("../models/product");
-// const auth = require("../middleware/customerAuth");
+const { addToWishlist, getWishlist, removeFromWishlist } = require("../controllers/wishlistController");
 
-// ADD TO WISHLIST
+router.post("/add/:productId", addToWishlist);
+/*
+  #swagger.tags = ['Wishlist']
+  #swagger.summary = 'Add a product to the wishlist'
+  #swagger.security = [{ BearerAuth: [] }]
+  #swagger.parameters['productId'] = { in: 'path', required: true, type: 'string' }
+  #swagger.responses[200] = { description: 'Added to wishlist' }
+  #swagger.responses[404] = { description: 'Product not found' }
+  #swagger.responses[401] = { description: 'Unauthorized' }
+*/
 
-router.post("/add/:productId",  async (req, res) => {
+router.get("/", getWishlist);
+/*
+  #swagger.tags = ['Wishlist']
+  #swagger.summary = 'Get the authenticated customer wishlist'
+  #swagger.security = [{ BearerAuth: [] }]
+  #swagger.responses[200] = { description: 'Wishlist with populated products' }
+  #swagger.responses[401] = { description: 'Unauthorized' }
+*/
 
-  const product = await Product.findById(req.params.productId);
-  if (!product)
-    return res.status(404).json({ msg: "Product not found" });
-
-  let wishlist = await Wishlist.findOne({ customer: req.user.id });
-
-  if (!wishlist) {
-    wishlist = new Wishlist({
-      customer: req.user.id,
-      products: []
-    });
-  }
-
-  if (!wishlist.products.includes(req.params.productId)) {
-    wishlist.products.push(req.params.productId);
-  }
-
-  await wishlist.save();
-  res.json({ msg: "Added to wishlist", wishlist });
-});
-
-// GET WISHLIST
-
-router.get("/",  async (req, res) => {
-  const wishlist = await Wishlist.findOne({
-    customer: req.user.id
-  }).populate("products");
-
-  res.json(wishlist || { products: [] });
-});
-
-// REMOVE FROM WISHLIST
-
-router.delete("/remove/:productId",  async (req, res) => {
-  const wishlist = await Wishlist.findOne({
-    customer: req.user.id
-  });
-
-  if (!wishlist)
-    return res.status(404).json({ msg: "Wishlist empty" });
-
-  wishlist.products = wishlist.products.filter(
-    p => p.toString() !== req.params.productId
-  );
-
-  await wishlist.save();
-
-  res.json({ msg: "Removed from wishlist" });
-});
+router.delete("/remove/:productId", removeFromWishlist);
+/*
+  #swagger.tags = ['Wishlist']
+  #swagger.summary = 'Remove a product from the wishlist'
+  #swagger.security = [{ BearerAuth: [] }]
+  #swagger.parameters['productId'] = { in: 'path', required: true, type: 'string' }
+  #swagger.responses[200] = { description: 'Removed from wishlist', schema: { msg: 'Removed from wishlist' } }
+  #swagger.responses[404] = { description: 'Wishlist empty' }
+*/
 
 module.exports = router;
