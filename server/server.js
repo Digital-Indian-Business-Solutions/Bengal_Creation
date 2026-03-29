@@ -108,7 +108,11 @@ app.get("/health", async (req, res) => {
 try {
   const swaggerFile = require("./swagger-output.json");
   const swaggerUi = require("swagger-ui-express");
-  app.get("/api-docs",swaggerUi.serve ,swaggerUi.setup(swaggerFile));
+  app.get("/api-docs",swaggerUi.serve ,swaggerUi.setup(swaggerFile,{
+    explorer: true,
+    customSiteTitle: "Bengal Creations API Documentation",
+    
+  }));
 } catch {
   console.log("Swagger file not yet generated.");
 }
