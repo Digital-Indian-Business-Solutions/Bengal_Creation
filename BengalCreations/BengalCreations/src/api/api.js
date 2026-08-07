@@ -46,17 +46,17 @@ export const fetchProductsPage = async ({ page = 1, limit = 10, search = "" } = 
   if (!res.ok) throw new Error("Failed to fetch products");
   const data = await res.json();
   return {
-    products:   data.products.map(transformProduct),
+    products: data.products.map(transformProduct),
     pagination: data.pagination,
   };
 };
-export const fetchProductsPageByCategory = async ({ page = 1, limit = 10,  category } = {}) => {
-  const params = new URLSearchParams({ page, limit,category });
+export const fetchProductsPageByCategory = async ({ page = 1, limit = 10, category } = {}) => {
+  const params = new URLSearchParams({ page, limit, category });
   const res = await fetch(`${API}/products?${params}`);
   if (!res.ok) throw new Error("Failed to fetch products");
   const data = await res.json();
   return {
-    products:   data.products.map(transformProduct),
+    products: data.products.map(transformProduct),
     pagination: data.pagination,
   };
 };
@@ -324,11 +324,11 @@ export const deleteAddress = async (addressId) => {
 };
 
 // ─── Chatbot ─────────────────────────────────────────────────────────────────
-export const sendChatMessage = async (question, history = [],name) => {
+export const sendChatMessage = async (question, history = [], name) => {
   const res = await fetch(`${API}/chatbot`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question, history,name }),
+    body: JSON.stringify({ question, history, name }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.msg || "Chatbot error");
@@ -640,9 +640,9 @@ export const saUpdateSettings = async (token, body) => {
 //─── Wishlist ─────────────────────────────────────────
 
 export const fetchWishlist = async (userId) => {
-  const res = await fetch(`${API}/wishlist/`,{
-    body:{
-      userId:userId
+  const res = await fetch(`${API}/wishlist/`, {
+    body: {
+      userId: userId
     }
   });
   if (!res.ok) throw new Error("Failed to fetch wishlist");

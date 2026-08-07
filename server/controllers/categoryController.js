@@ -32,7 +32,6 @@ const getAllCategories = async (req, res) => {
       await Category.create({
         name: "Fashion & Apparel",
         slug: "fashion-apparel",
-        emoji: "👗",
         image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=500&auto=format&fit=crop&q=60",
       });
     }

@@ -786,8 +786,7 @@ function VendorPage({ currentUser, onShowToast, WB_DISTRICTS, doLogout }) {
                     <div className="dp-cat-grid">
                       {Array.isArray(catOptions) && catOptions.map((c) => (
                         <div key={c._id} className={`dp-cat-tile ${selectedCat?._id === c._id ? "dp-cat-tile--active" : ""}`} onClick={() => setSelectedCat(c)}>
-                          <div style={{ fontSize: 22, marginBottom: 4 }}>{c.emoji}</div>
-                          <div style={{ fontSize: 11, fontWeight: 600 }}>{c.name}</div>
+                          <div style={{ fontSize: 12, fontWeight: 600, textAlign: "center" }}>{c.name}</div>
                         </div>
                       ))}
                     </div>

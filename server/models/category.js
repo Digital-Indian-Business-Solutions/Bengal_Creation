@@ -17,7 +17,7 @@ const categorySchema = new mongoose.Schema({
 
     emoji: {
         type: String,
-        default: "👗"
+        default: ""
     },
 
     parent: {

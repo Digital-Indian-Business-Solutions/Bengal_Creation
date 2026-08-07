@@ -6,20 +6,20 @@ const { connectDB } = require("./config/db");
 const buildApiDocsHtml = require("./utils/apiDocsHtml");
 
 // Routes
-const vendorRoutes       = require("./routes/vendorRoutes");
-const productRoutes      = require("./routes/productRoutes");
-const categoryRoutes     = require("./routes/categoryRoutes");
-const orderRoutes        = require("./routes/order");
-const cartRoutes         = require("./routes/cartRoutes");
-const addressRoutes      = require("./routes/addressRoutes");
-const customerAuth       = require("./routes/customerAuth");
-const wishlistRoutes     = require("./routes/wishlistRoutes");
-const paymentRoutes      = require("./routes/paymentRoutes");
-const webhookRoutes      = require("./routes/webhookRoutes");
-const couponRoutes       = require("./routes/couponRoutes");
-const superAdminRoutes   = require("./routes/superAdminRoutes");
+const vendorRoutes = require("./routes/vendorRoutes");
+const productRoutes = require("./routes/productRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
+const orderRoutes = require("./routes/order");
+const cartRoutes = require("./routes/cartRoutes");
+const addressRoutes = require("./routes/addressRoutes");
+const customerAuth = require("./routes/customerAuth");
+const wishlistRoutes = require("./routes/wishlistRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+const webhookRoutes = require("./routes/webhookRoutes");
+const couponRoutes = require("./routes/couponRoutes");
+const superAdminRoutes = require("./routes/superAdminRoutes");
 
-const app  = express();
+const app = express();
 const port = process.env.PORT || 5000;
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
@@ -54,19 +54,19 @@ app.use(async (req, res, next) => {
 });
 
 // ── API Routes ─────────────────────────────────────────────────────────────────
-app.use("/api/vendors",    vendorRoutes);
-app.use("/api/products",   productRoutes);
+app.use("/api/vendors", vendorRoutes);
+app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
-app.use("/api/orders",     orderRoutes);
-app.use("/api/cart",       cartRoutes);
-app.use("/api/addresses",  addressRoutes);
-app.use("/api/auth",       customerAuth);
-app.use("/api/wishlist",   wishlistRoutes);
-app.use("/api/payment",    paymentRoutes);
-app.use("/api/webhook",    webhookRoutes);
-app.use("/api/contact",    require("./routes/contactRoutes"));
-app.use("/api/chatbot",    require("./routes/chatbotRoutes"));
-app.use("/api/coupon",     couponRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/addresses", addressRoutes);
+app.use("/api/auth", customerAuth);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/payment", paymentRoutes);
+app.use("/api/webhook", webhookRoutes);
+app.use("/api/contact", require("./routes/contactRoutes"));
+app.use("/api/chatbot", require("./routes/chatbotRoutes"));
+app.use("/api/coupon", couponRoutes);
 app.use("/api/super-admin", superAdminRoutes);
 
 // Public platform settings (for frontend checkout to read charges)
@@ -100,19 +100,19 @@ app.get("/", (req, res) => {
     docs: `${req.protocol}://${req.get("host")}/api-docs`,
     health: `${req.protocol}://${req.get("host")}/health`,
     endpoints: {
-      auth:        "/api/auth",
-      vendors:     "/api/vendors",
-      products:    "/api/products",
-      categories:  "/api/categories",
-      orders:      "/api/orders",
-      cart:        "/api/cart",
-      addresses:   "/api/addresses",
-      wishlist:    "/api/wishlist",
-      payment:     "/api/payment",
-      coupon:      "/api/coupon",
-      contact:     "/api/contact",
-      chatbot:     "/api/chatbot",
-      superAdmin:  "/api/super-admin",
+      auth: "/api/auth",
+      vendors: "/api/vendors",
+      products: "/api/products",
+      categories: "/api/categories",
+      orders: "/api/orders",
+      cart: "/api/cart",
+      addresses: "/api/addresses",
+      wishlist: "/api/wishlist",
+      payment: "/api/payment",
+      coupon: "/api/coupon",
+      contact: "/api/contact",
+      chatbot: "/api/chatbot",
+      superAdmin: "/api/super-admin",
     },
   });
 });
