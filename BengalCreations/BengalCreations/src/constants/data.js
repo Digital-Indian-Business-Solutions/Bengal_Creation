@@ -30,9 +30,8 @@ export const CATEGORY_TILES = [
     img: "https://www.taxscan.in/wp-content/uploads/2022/09/Anti-Dumping-Duty-Jute-Products-CBIC-taxscan.jpg",
   },
   {
-    name: "Fashion & Apparel",
-    img: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=500&auto=format&fit=crop&q=60",
-    emoji: "👗",
+    name: "Bengal Sweets",
+    img: "https://media.istockphoto.com/id/843602938/photo/rajbhog-or-bengali-rasgulla-indian-sweet.jpg?s=170667a&w=0&k=20&c=mmV4LMPXnYEHEYmPMLj3sB7oaW4UYlk-KbvhbLfuqp4=",
   },
 ];
 

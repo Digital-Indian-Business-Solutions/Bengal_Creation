@@ -73,15 +73,6 @@ const seedVendorAndProducts = async () => {
     if (!Bengal_Sweets) {
       console.log("Category not found!");
     }
-    let Fashion_Apparel = await Category.findOne({ name: "Fashion & Apparel" });
-    if (!Fashion_Apparel) {
-      Fashion_Apparel = await Category.create({
-        name: "Fashion & Apparel",
-        slug: "fashion-apparel",
-        emoji: "👗",
-        image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=500&auto=format&fit=crop&q=60",
-      });
-    }
 
     // Products Data (Each product has < 5 images)
     // Products Data (Each product has < 5 images)
