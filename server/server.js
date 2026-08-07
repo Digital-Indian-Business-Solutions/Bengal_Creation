@@ -78,6 +78,29 @@ app.use("/api/chatbot", require("./routes/chatbotRoutes"));
 app.use("/api/coupon", couponRoutes);
 app.use("/api/super-admin", superAdminRoutes);
 
+// Image Upload Endpoint (Cloudinary)
+const { upload, uploadToCloudinary } = require("./middleware/upload");
+app.post("/api/upload", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: "No file provided" });
+    }
+    const result = await uploadToCloudinary(
+      req.file.buffer,
+      req.file.originalname,
+      "bengal_creations"
+    );
+    res.json({
+      success: true,
+      url: result.url || result.secureUrl,
+      secure_url: result.secureUrl || result.url,
+    });
+  } catch (err) {
+    console.error("Cloudinary upload error:", err);
+    res.status(500).json({ success: false, error: err.message || "Failed to upload image" });
+  }
+});
+
 // Public platform settings (for frontend checkout to read charges)
 app.get("/api/settings", async (req, res) => {
   try {

@@ -1,5 +1,15 @@
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap");
 
+/* Hide number input spin buttons to prevent scroll increase/decrease */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 :root {
   --cream: #faf6ef;
   --cream2: #f3ede2;
@@ -344,8 +354,14 @@ h5 {
   margin: 0 auto;
 }
 .carousel-track-outer {
-  overflow: hidden;
+  overflow-x: auto;
+  scroll-behavior: smooth;
   margin: 0 50px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.carousel-track-outer::-webkit-scrollbar {
+  display: none;
 }
 .carousel-track {
   display: flex;

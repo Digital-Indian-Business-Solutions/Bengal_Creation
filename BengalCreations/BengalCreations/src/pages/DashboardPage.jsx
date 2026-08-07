@@ -92,6 +92,14 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
   const [editIdx, setEditIdx]             = useState(null);
   const [form, setForm] = useState({ name: "", price: "", originPrice: "", stock: "", district: "", desc: "" });
   const [bulletPoints, setBulletPoints] = useState([""]);
+  const [variants, setVariants] = useState([
+    { size: "S", chest: "38", waist: "37", sleeve: "20", shoulder: "15", length: "40", stock: 0 },
+    { size: "M", chest: "40", waist: "39", sleeve: "22", shoulder: "15", length: "40", stock: 0 },
+    { size: "L", chest: "42", waist: "41", sleeve: "22", shoulder: "16", length: "42", stock: 0 },
+    { size: "XL", chest: "44", waist: "43", sleeve: "24", shoulder: "17", length: "42", stock: 0 },
+    { size: "XXL", chest: "46", waist: "45", sleeve: "24", shoulder: "18", length: "42", stock: 0 },
+    { size: "XXXL", chest: "48", waist: "47", sleeve: "24", shoulder: "19", length: "42", stock: 0 },
+  ]);
 
   const [reportData, setReportData]       = useState(null);
   const [reportLoading, setReportLoading] = useState(false);
@@ -174,9 +182,30 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
     setBulletPoints((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  const handleVariantChange = (idx, field, value) => {
+    setVariants((prev) => {
+      const copy = [...prev];
+      const val = field === "stock" ? (parseInt(value) || 0) : value;
+      copy[idx] = { ...copy[idx], [field]: val };
+
+      const totalStock = copy.reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+      setForm((f) => ({ ...f, stock: totalStock }));
+
+      return copy;
+    });
+  };
+
   const resetForm = useCallback(() => {
     setForm({ name: "", price: "", originPrice: "", stock: "", district: "", desc: "" });
     setBulletPoints([""]);
+    setVariants([
+      { size: "S", chest: "38", waist: "37", sleeve: "20", shoulder: "15", length: "40", stock: 0 },
+      { size: "M", chest: "40", waist: "39", sleeve: "22", shoulder: "15", length: "40", stock: 0 },
+      { size: "L", chest: "42", waist: "41", sleeve: "22", shoulder: "16", length: "42", stock: 0 },
+      { size: "XL", chest: "44", waist: "43", sleeve: "24", shoulder: "17", length: "42", stock: 0 },
+      { size: "XXL", chest: "46", waist: "45", sleeve: "24", shoulder: "18", length: "42", stock: 0 },
+      { size: "XXXL", chest: "48", waist: "47", sleeve: "24", shoulder: "19", length: "42", stock: 0 },
+    ]);
     setSelectedEmoji("🥻");
     if (catOptions.length > 0) setSelectedCat(catOptions[0]);
     setEditIdx(null); setImages([]); setImageFiles([]);
@@ -258,6 +287,8 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
         finalDesc = finalDesc ? `${finalDesc}\n\nKey Highlights:\n${bulletText}` : bulletText;
       }
 
+      const isFashionCat = selectedCat?.name?.toLowerCase().includes("fashion") || selectedCat?.name?.toLowerCase().includes("apparel") || selectedCat?.name?.toLowerCase().includes("saree") || selectedCat?.name?.toLowerCase().includes("cloth") || selectedCat?.name?.toLowerCase().includes("kurta") || selectedCat?.name?.toLowerCase().includes("wear");
+
       const productPayload = {
         name: form.name,
         price: form.price,
@@ -268,6 +299,7 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
         description: finalDesc,
         vendor: currentUser._id,
         images: imageUrls,
+        variants: isFashionCat ? variants : [],
       };
 
       if (editIdx !== null && dashProducts[editIdx]) {
@@ -324,6 +356,18 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
 
     setForm({ name: p.name, price: p.price, originPrice: p.original || "", stock: p.stock, district: p.district || "", desc: mainDescLines.join("\n").trim() });
     setBulletPoints(parsedBullets.length > 0 ? parsedBullets.slice(0, 4) : [""]);
+    if (Array.isArray(p.variants) && p.variants.length > 0) {
+      setVariants(p.variants);
+    } else {
+      setVariants([
+        { size: "S", chest: "38", waist: "37", sleeve: "20", shoulder: "15", length: "40", stock: 0 },
+        { size: "M", chest: "40", waist: "39", sleeve: "22", shoulder: "15", length: "40", stock: 0 },
+        { size: "L", chest: "42", waist: "41", sleeve: "22", shoulder: "16", length: "42", stock: 0 },
+        { size: "XL", chest: "44", waist: "43", sleeve: "24", shoulder: "17", length: "42", stock: 0 },
+        { size: "XXL", chest: "46", waist: "45", sleeve: "24", shoulder: "18", length: "42", stock: 0 },
+        { size: "XXXL", chest: "48", waist: "47", sleeve: "24", shoulder: "19", length: "42", stock: 0 },
+      ]);
+    }
     setSelectedEmoji(p.emoji);
     setSelectedCat(p.category);
     setEditIdx(i);
@@ -699,11 +743,73 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
                       {[["price","💰 Selling Price (₹)","e.g. 1200"],["originPrice","💰 Original Price (₹)","e.g. 1500"],["stock","📦 Units in Stock","e.g. 10"]].map(([key,label,ph]) => (
                         <div key={key}>
                           <label className="dp-label">{label}</label>
-                          <input className="dp-input" type="number" placeholder={ph} value={form[key]} onChange={(e) => setForm(f => ({ ...f, [key]: e.target.value }))} />
+                          <input className="dp-input" type="number" placeholder={ph} value={form[key]} onChange={(e) => setForm(f => ({ ...f, [key]: e.target.value }))} onWheel={(e) => e.target.blur()} readOnly={key === "stock" && (selectedCat?.name?.toLowerCase().includes("fashion") || selectedCat?.name?.toLowerCase().includes("apparel") || selectedCat?.name?.toLowerCase().includes("saree") || selectedCat?.name?.toLowerCase().includes("kurta"))} />
                         </div>
                       ))}
                     </div>
                   </div>
+
+                  {(selectedCat?.name?.toLowerCase().includes("fashion") || selectedCat?.name?.toLowerCase().includes("apparel") || selectedCat?.name?.toLowerCase().includes("saree") || selectedCat?.name?.toLowerCase().includes("cloth") || selectedCat?.name?.toLowerCase().includes("kurta") || selectedCat?.name?.toLowerCase().includes("wear")) && (
+                    <div className="dp-form-section" style={{ background: "#fafbff", border: "1.5px solid #cbd5e1", borderRadius: 12, padding: 16 }}>
+                      <div className="dp-form-section-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#7a1c2e" }}>
+                          📏 Size Chart & Variants Stock (6 Sizes Available)
+                        </span>
+                        <span style={{ fontSize: 11, color: "#16a34a", fontWeight: 700, background: "#dcfce7", padding: "3px 10px", borderRadius: 12 }}>
+                          Total Product Stock: {form.stock || 0} units
+                        </span>
+                      </div>
+
+                      <div style={{ overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, background: "white", borderRadius: 8, overflow: "hidden" }}>
+                          <thead>
+                            <tr style={{ background: "#f1f5f9", color: "#334155" }}>
+                              <th style={{ padding: "8px 10px", textAlign: "left" }}>Size</th>
+                              <th style={{ padding: "8px 6px", textAlign: "center" }}>Chest (in)</th>
+                              <th style={{ padding: "8px 6px", textAlign: "center" }}>Waist (in)</th>
+                              <th style={{ padding: "8px 6px", textAlign: "center" }}>Sleeve (in)</th>
+                              <th style={{ padding: "8px 6px", textAlign: "center" }}>Shoulder (in)</th>
+                              <th style={{ padding: "8px 6px", textAlign: "center" }}>Length (in)</th>
+                              <th style={{ padding: "8px 10px", textAlign: "center", color: "#7a1c2e", fontWeight: "bold", background: "#fef2f2" }}>Stock (Qty) *</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {variants.map((v, idx) => (
+                              <tr key={v.size} style={{ borderTop: "1px solid #e2e8f0" }}>
+                                <td style={{ padding: "8px 10px", fontWeight: "bold", color: "#1e293b", background: "#f8fafc" }}>{v.size}</td>
+                                {["chest", "waist", "sleeve", "shoulder", "length"].map((col) => (
+                                  <td key={col} style={{ padding: "4px" }}>
+                                    <input
+                                      type="text"
+                                      className="dp-input"
+                                      style={{ padding: "4px 6px", textAlign: "center", fontSize: 12 }}
+                                      value={v[col] ?? ""}
+                                      onChange={(e) => handleVariantChange(idx, col, e.target.value)}
+                                    />
+                                  </td>
+                                ))}
+                                <td style={{ padding: "4px", background: "#fef2f2" }}>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    className="dp-input"
+                                    style={{ padding: "4px 6px", textAlign: "center", fontSize: 13, fontWeight: "bold", color: "#16a34a", border: "1.5px solid #86efac" }}
+                                    placeholder="0"
+                                    value={v.stock === 0 ? "" : v.stock}
+                                    onChange={(e) => handleVariantChange(idx, "stock", e.target.value)}
+                                    onWheel={(e) => e.target.blur()}
+                                  />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div style={{ fontSize: 11, color: "#64748b", marginTop: 8 }}>
+                        💡 Total product stock is calculated automatically by adding up the stock quantities of all 6 size variants.
+                      </div>
+                    </div>
+                  )}
 
                   <div className="dp-form-section">
                     <div className="dp-form-section-title">District *</div>

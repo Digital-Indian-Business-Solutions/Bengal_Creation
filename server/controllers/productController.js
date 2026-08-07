@@ -26,6 +26,7 @@ const createProduct = async (req, res) => {
       category: req.body.category,
       vendor: req.body.vendor,
       images: req.body.images || [],
+      variants: req.body.variants || [],
     });
 
     await product.save();

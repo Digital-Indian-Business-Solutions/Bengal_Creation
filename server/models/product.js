@@ -21,6 +21,18 @@ const productSchema = new mongoose.Schema({
 
     images: [String],   // Cloudinary URLs
 
+    variants: [
+        {
+            size: String,
+            chest: String,
+            waist: String,
+            sleeve: String,
+            shoulder: String,
+            length: String,
+            stock: { type: Number, default: 0 }
+        }
+    ],
+
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Category"

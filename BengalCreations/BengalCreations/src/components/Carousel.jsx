@@ -47,22 +47,25 @@ function Carousel({
 
   const goTo = useCallback(
     (p) => {
-      const clamped = ((p % totalPages) + totalPages) % totalPages;
-      setPage(clamped);
-      scrollToPage(clamped);
+      const el = trackOuterRef.current;
+      if (!el) return;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (maxScroll <= 0) return;
+      const targetLeft = (p / (totalPages - 1 || 1)) * maxScroll;
+      el.scrollTo({ left: targetLeft, behavior: "smooth" });
+      setPage(p);
     },
-    [totalPages, scrollToPage],
+    [totalPages],
   );
 
   const move = useCallback(
     (dir) => {
-      setPage((prev) => {
-        const next = (prev + dir + totalPages) % totalPages;
-        scrollToPage(next);
-        return next;
-      });
+      const el = trackOuterRef.current;
+      if (!el) return;
+      const scrollAmount = Math.max(260, el.clientWidth * 0.75);
+      el.scrollBy({ left: dir * scrollAmount, behavior: "smooth" });
     },
-    [totalPages, scrollToPage],
+    [],
   );
 
   // Reset on product change
@@ -84,9 +87,15 @@ function Carousel({
   const handleScroll = useCallback(() => {
     const el = trackOuterRef.current;
     if (!el) return;
-    const p = Math.round(el.scrollLeft / stepPx);
-    setPage(Math.min(p, totalPages - 1));
-  }, [stepPx, totalPages]);
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll <= 0) {
+      setPage(0);
+      return;
+    }
+    const pageRatio = el.scrollLeft / maxScroll;
+    const computedPage = Math.round(pageRatio * (totalPages - 1));
+    setPage(Math.min(Math.max(0, computedPage), totalPages - 1));
+  }, [totalPages]);
 
   const handleTouchStart = (e) => {
     startX.current = e.touches[0].clientX;
@@ -110,7 +119,7 @@ function Carousel({
       >
         <button
           className="carousel-nav prev"
-          onClick={() => move(1)}
+          onClick={() => move(-1)}
           aria-label="Previous"
         >
           ‹
@@ -255,7 +264,7 @@ function Carousel({
 
         <button
           className="carousel-nav next"
-          onClick={() => move(-1)}
+          onClick={() => move(1)}
           aria-label="Next"
         >
           ›

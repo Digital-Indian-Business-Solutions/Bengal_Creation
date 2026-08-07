@@ -22,6 +22,8 @@ function ProductDetailPage({
   const [loading, setLoading] = useState(true);
   const [p, setP] = useState(null);
   const [vendorProducts, setVendorProducts] = useState([]);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [showSizeChart, setShowSizeChart] = useState(false);
   console.log("ID:", id);
   useEffect(() => {
     if (p?.vendorId) {
@@ -285,6 +287,84 @@ function ProductDetailPage({
             )}
           </div>
           <p className="pd-desc" style={{ whiteSpace: "pre-line" }}>{p.desc}</p>
+
+          {Array.isArray(p.variants) && p.variants.length > 0 && (
+            <div style={{ margin: "16px 0", background: "#fafbff", padding: 14, borderRadius: 12, border: "1px solid #cbd5e1" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>Select Size:</span>
+                <button
+                  type="button"
+                  onClick={() => setShowSizeChart(!showSizeChart)}
+                  style={{ background: "none", border: "none", color: "#7a1c2e", fontSize: 12, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
+                >
+                  📏 {showSizeChart ? "Hide Size Chart" : "View Size Chart"}
+                </button>
+              </div>
+
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+                {p.variants.map((v) => {
+                  const isSelected = selectedSize === v.size;
+                  const outOfStock = v.stock === 0;
+                  return (
+                    <button
+                      key={v.size}
+                      type="button"
+                      disabled={outOfStock}
+                      onClick={() => setSelectedSize(v.size)}
+                      style={{
+                        padding: "6px 14px",
+                        borderRadius: 8,
+                        border: isSelected ? "2px solid #7a1c2e" : "1.5px solid #cbd5e1",
+                        background: isSelected ? "#7a1c2e" : outOfStock ? "#f1f5f9" : "white",
+                        color: isSelected ? "white" : outOfStock ? "#94a3b8" : "#1e293b",
+                        fontWeight: 700,
+                        fontSize: 13,
+                        cursor: outOfStock ? "not-allowed" : "pointer",
+                        textDecoration: outOfStock ? "line-through" : "none",
+                      }}
+                    >
+                      {v.size}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {selectedSize && (
+                <div style={{ fontSize: 12, color: "#16a34a", fontWeight: 600 }}>
+                  ✓ Size {selectedSize} selected ({p.variants.find((v) => v.size === selectedSize)?.stock || 0} units available)
+                </div>
+              )}
+
+              {showSizeChart && (
+                <div style={{ marginTop: 12, overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, background: "white", borderRadius: 8, overflow: "hidden", border: "1px solid #cbd5e1" }}>
+                    <thead>
+                      <tr style={{ background: "#e2e8f0", color: "#1e293b", fontWeight: "bold" }}>
+                        <th style={{ padding: "6px", textAlign: "left" }}>Label Size</th>
+                        <th style={{ padding: "6px", textAlign: "center" }}>Chest (in)</th>
+                        <th style={{ padding: "6px", textAlign: "center" }}>Waist (in)</th>
+                        <th style={{ padding: "6px", textAlign: "center" }}>Sleeve (in)</th>
+                        <th style={{ padding: "6px", textAlign: "center" }}>Shoulder (in)</th>
+                        <th style={{ padding: "6px", textAlign: "center" }}>Length (in)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {p.variants.map((v) => (
+                        <tr key={v.size} style={{ borderTop: "1px solid #e2e8f0", background: selectedSize === v.size ? "#fffbeb" : "white" }}>
+                          <td style={{ padding: "6px", fontWeight: "bold", background: "#f8fafc" }}>{v.size}</td>
+                          <td style={{ padding: "6px", textAlign: "center" }}>{v.chest || "-"}</td>
+                          <td style={{ padding: "6px", textAlign: "center" }}>{v.waist || "-"}</td>
+                          <td style={{ padding: "6px", textAlign: "center" }}>{v.sleeve || "-"}</td>
+                          <td style={{ padding: "6px", textAlign: "center" }}>{v.shoulder || "-"}</td>
+                          <td style={{ padding: "6px", textAlign: "center" }}>{v.length || "-"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
           <div className="pd-meta">
             {[
               ["Category", p.category],

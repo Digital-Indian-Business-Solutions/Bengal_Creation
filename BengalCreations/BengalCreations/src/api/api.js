@@ -23,6 +23,7 @@ export const transformProduct = (item) => ({
     })) || [],
   desc: item.description || "",
   isActive: item.isActive,
+  variants: item.variants || [],
 });
 
 // ─── Vendor helper ────────────────────────────────────────────────────────────
