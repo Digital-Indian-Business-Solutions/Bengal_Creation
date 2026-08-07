@@ -95,39 +95,25 @@ const getAllProducts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const category = req.query.category || "";
     const search = req.query.search || "";
-    console.log("Query params:", { page, limit, category, search });
-    const filter = {};
-    if (category) filter["$or"] = []; // handled below
 
-    // let query = {};
-    // if (search) {
-    //   query["$and"] = [
-    //     { name:     { $regex: search, $options: "i" } },
-    //     { district: { $regex: search, $options: "i" } },
-    //   ];
-    // }
-    // let query = {};
+    const conditions = [];
 
-    // if (search) {
-    //   // First find matching category
-    //   const categoryDoc = await Category.findOne({
-    //     name: { $regex: search, $options: "i" },
-    //   });
+    // Step 1: Category filter
+    if (category) {
+      const cat = await Category.findOne({
+        name: { $regex: `^${category.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" },
+      });
+      if (cat) {
+        conditions.push({ category: cat._id });
+      } else if (mongoose.Types.ObjectId.isValid(category)) {
+        conditions.push({ category });
+      } else {
+        // If category is specified but not found in DB, return empty result
+        conditions.push({ _id: null });
+      }
+    }
 
-    //   query["$or"] = [
-    //     { name: { $regex: search, $options: "i" } },
-    //     { district: { $regex: search, $options: "i" } },
-    //   ];
-
-    //   // If category found, include it
-    //   if (categoryDoc) {
-    //     query["$or"].push({ category: categoryDoc._id });
-    //   }
-    // }
-
-    let query = {};
-
-    // Step 1: Search logic
+    // Step 2: Search filter
     if (search) {
       const categoryDoc = await Category.findOne({
         name: { $regex: search, $options: "i" },
@@ -142,30 +128,10 @@ const getAllProducts = async (req, res) => {
         searchConditions.push({ category: categoryDoc._id });
       }
 
-      query.$or = searchConditions;
+      conditions.push({ $or: searchConditions });
     }
 
-    // Step 2: Category filter (from dropdown / params)
-    if (category) {
-      const cat = await Category.findOne({ name: category });
-
-      if (cat) {
-        query.category = cat._id;
-      }
-    }
-    // console.log("Base query:", query);
-    if (category) {
-      const cat = await Category.findOne({ name: category });
-      if (cat) {
-        query["$and"] = query["$and"] || [];
-        query["$and"].push({ category: cat._id });
-      } else {
-        console.log(
-          `Category "${category}" not found, ignoring category filter`,
-        );
-      }
-    }
-    console.log("Final query:", query);
+    const query = conditions.length > 0 ? (conditions.length === 1 ? conditions[0] : { $and: conditions }) : {};
 
     const skip = (page - 1) * limit;
     const total = await Product.countDocuments(query);
@@ -176,7 +142,7 @@ const getAllProducts = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
-    console.log("Retrieved products:", products);
+
     res.json({
       products,
       pagination: {
@@ -188,6 +154,7 @@ const getAllProducts = async (req, res) => {
       },
     });
   } catch (err) {
+    console.error("Error in getAllProducts:", err);
     res.status(500).json({ error: err.message });
   }
 };

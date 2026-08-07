@@ -27,8 +27,17 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || "").split(",").map(s => s
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin) return cb(null, true);
-    if (allowedOrigins.includes(origin)) return cb(null, true);
-    cb(new Error("Not allowed by CORS"));
+    if (
+      allowedOrigins.length === 0 ||
+      allowedOrigins.includes(origin) ||
+      origin.includes("bengalcreations.in") ||
+      origin.endsWith(".vercel.app") ||
+      origin.includes("localhost") ||
+      origin.includes("127.0.0.1")
+    ) {
+      return cb(null, true);
+    }
+    cb(new Error("Not allowed by CORS: " + origin));
   },
   credentials: true,
 }));
@@ -145,9 +154,14 @@ app.use((req, res) => {
 // ── Global error handler ──────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error("Server error:", err);
+  const origin = req.headers.origin;
+  if (origin && (allowedOrigins.includes(origin) || origin.includes("bengalcreations.in") || origin.endsWith(".vercel.app") || origin.includes("localhost"))) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  }
   res.status(500).json({
     success: false,
-    message: "Internal server error",
+    message: err.message || "Internal server error",
     error: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 });
