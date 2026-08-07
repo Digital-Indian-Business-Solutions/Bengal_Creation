@@ -26,7 +26,20 @@ const createCategory = async (req, res) => {
 };
 
 const getAllCategories = async (req, res) => {
-  console.log(req);
+  try {
+    const fashionCat = await Category.findOne({ name: "Fashion & Apparel" });
+    if (!fashionCat) {
+      await Category.create({
+        name: "Fashion & Apparel",
+        slug: "fashion-apparel",
+        emoji: "👗",
+        image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=500&auto=format&fit=crop&q=60",
+      });
+    }
+  } catch (e) {
+    console.error("Error ensuring Fashion & Apparel category:", e);
+  }
+
   const categories = await Category.find().populate("parent", "name");
   res.json(categories);
 };

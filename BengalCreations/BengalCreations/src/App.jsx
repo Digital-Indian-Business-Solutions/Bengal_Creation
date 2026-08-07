@@ -90,7 +90,7 @@ export default function App() {
     (user) => {
       login(user);
       showToast(`Welcome back, ${user.name}!`);
-      navigate(user.role === "vendor" ? "/dashboard" : "/");
+      navigate(user.role === "vendor" ? "/vendor" : "/");
     },
     [login, showToast, navigate]
   );
@@ -122,10 +122,12 @@ export default function App() {
   const isLoginPage = location.pathname === "/login";
   const isResetPage = location.pathname.startsWith("/reset-password");
   const isSuperAdmin = location.pathname.startsWith("/super-admin");
+  const isVendorPage = location.pathname === "/vendor";
+  const isDashboard  = location.pathname.startsWith("/dashboard");
 
   return (
     <div className="bc-app">
-      {!isLoginPage && !isResetPage && !isSuperAdmin && (
+      {!isLoginPage && !isResetPage && !isSuperAdmin && !isVendorPage && !isDashboard && (
         <Navbar
           cart={cart}
           wishlist={wishlist}
@@ -182,7 +184,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage onLogin={handleLogin} showToast={showToast} />} />
         <Route path="/reset-password/:customerId/:token" element={<ResetPasswordPage showToast={showToast} />} />
         <Route path="/vendor" element={
-          <VendorPage onShowToast={showToast} catOptions={catOptions} WB_DISTRICTS={WB_DISTRICTS} />
+          <VendorPage currentUser={currentUser} onShowToast={showToast} catOptions={catOptions} WB_DISTRICTS={WB_DISTRICTS} doLogout={doLogout} />
         } />
         {/* Customer-only */}
         <Route path="/wishlist" element={
@@ -225,7 +227,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {!isLoginPage && !isResetPage && !isSuperAdmin && <Footer navigate={navigate} />}
+      {!isLoginPage && !isResetPage && !isSuperAdmin && !isVendorPage && !isDashboard && <Footer navigate={navigate} />}
 
       {/* Chatbot - only shown to non-vendor users */}
       {currentUser?.role !== "vendor" && !isSuperAdmin && <Chatbot />}

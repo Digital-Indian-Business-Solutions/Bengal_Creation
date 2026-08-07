@@ -307,7 +307,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
           {cart.map((p) => (
             <div key={p.product._id} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
               <div style={{ width: 50, height: 50, borderRadius: 8, overflow: "hidden", background: "var(--cream2)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
-                {p.product.images?.[0] ? <img src={p.product.images[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt="" /> : p.emoji}
+                { (p.product.thumb || p.product.images?.[0]?.url || (typeof p.product.images?.[0] === 'string' ? p.product.images[0] : null)) ? <img src={p.product.thumb || p.product.images?.[0]?.url || p.product.images[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt="" /> : p.emoji}
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: "var(--maroon)", lineHeight: 1.3 }}>{p.product.name}</div>

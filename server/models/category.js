@@ -15,6 +15,11 @@ const categorySchema = new mongoose.Schema({
 
     image: String,
 
+    emoji: {
+        type: String,
+        default: "👗"
+    },
+
     parent: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Category",

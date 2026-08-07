@@ -219,7 +219,12 @@ const updateProduct = async (req, res) => {
 };
 
 const deleteProduct = async (req, res) => {
-  await Product.findByIdAndDelete(req.params.id);
+  const product = await Product.findByIdAndDelete(req.params.id);
+  if (product && product.vendor) {
+    await Vendor.findByIdAndUpdate(product.vendor, {
+      $pull: { products: product._id },
+    });
+  }
   res.json({ msg: "Product deleted" });
 };
 

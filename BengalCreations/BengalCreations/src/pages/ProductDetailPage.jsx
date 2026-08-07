@@ -284,7 +284,7 @@ function ProductDetailPage({
               </span>
             )}
           </div>
-          <p className="pd-desc">{p.desc}</p>
+          <p className="pd-desc" style={{ whiteSpace: "pre-line" }}>{p.desc}</p>
           <div className="pd-meta">
             {[
               ["Category", p.category],

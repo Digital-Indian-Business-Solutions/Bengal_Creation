@@ -83,6 +83,25 @@ export const createProduct = async (formData) => {
   if (!res.ok) throw new Error(data.message || "Failed to create product");
   return data;
 };
+export const updateProduct = async (id, formData) => {
+  const res = await fetch(`${API}/products/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(formData),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || data.error || "Failed to update product");
+  return data;
+};
+
+export const deleteProduct = async (id) => {
+  const res = await fetch(`${API}/products/${id}`, {
+    method: "DELETE",
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || data.error || "Failed to delete product");
+  return data;
+};
 export const getProductById = async (id) => {
   const res = await fetch(`${API}/products/${id}`);
   if (!res.ok) throw new Error("Failed to fetch product");
