@@ -5,6 +5,9 @@ const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET || "ml_default";
 
 export const uploadImage = async (file) => {
   if (!file) return null;
+  if (typeof file === "string") return file;
+
+  let backendErrDetail = "";
 
   // 1. Primary: Upload via authenticated backend endpoint
   try {
@@ -16,14 +19,17 @@ export const uploadImage = async (file) => {
       body: formData,
     });
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data.url || data.secure_url) {
-        return data.url || data.secure_url;
-      }
+    const data = await res.json().catch(() => null);
+
+    if (res.ok && data && (data.url || data.secure_url)) {
+      return data.url || data.secure_url;
     }
+
+    backendErrDetail = (data && (data.error || data.message)) || `HTTP ${res.status}`;
+    console.warn("Backend upload failed:", backendErrDetail, "attempting direct Cloudinary upload fallback...");
   } catch (err) {
-    console.warn("Backend upload failed, attempting direct Cloudinary upload:", err);
+    backendErrDetail = err.message;
+    console.warn("Backend upload network error, attempting direct Cloudinary upload:", err);
   }
 
   // 2. Fallback: Direct Cloudinary upload
@@ -37,10 +43,17 @@ export const uploadImage = async (file) => {
       { method: "POST", body: formData }
     );
 
-    const data = await res.json();
-    return data.secure_url || data.url;
+    const data = await res.json().catch(() => null);
+
+    if (res.ok && data && (data.secure_url || data.url)) {
+      return data.secure_url || data.url;
+    }
+
+    const directErrDetail = (data && data.error && data.error.message) || (data && data.message) || `HTTP ${res.status}`;
+    throw new Error(`Upload failed. Backend: ${backendErrDetail}; Direct Cloudinary: ${directErrDetail}`);
   } catch (err) {
     console.error("Direct Cloudinary upload error:", err);
     throw err;
   }
 };
+

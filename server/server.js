@@ -51,6 +51,35 @@ app.use(express.urlencoded({ extended: true }));
 // ── Static files ──────────────────────────────────────────────────────────────
 app.use("/uploads", express.static("uploads"));
 
+// Image Upload Endpoint (Cloudinary)
+const { upload, uploadToCloudinary } = require("./middleware/upload");
+app.post("/api/upload", (req, res) => {
+  upload.single("file")(req, res, async (err) => {
+    if (err) {
+      console.error("Multer upload error:", err);
+      return res.status(400).json({ success: false, error: err.message || "File upload failed" });
+    }
+    try {
+      if (!req.file) {
+        return res.status(400).json({ success: false, error: "No file provided" });
+      }
+      const result = await uploadToCloudinary(
+        req.file.buffer,
+        req.file.originalname,
+        "bengal_creations"
+      );
+      res.json({
+        success: true,
+        url: result.url || result.secureUrl,
+        secure_url: result.secureUrl || result.url,
+      });
+    } catch (uploadErr) {
+      console.error("Cloudinary upload error:", uploadErr);
+      res.status(500).json({ success: false, error: uploadErr.message || "Failed to upload image" });
+    }
+  });
+});
+
 // ── DB per request ─────────────────────────────────────────────────────────────
 app.use(async (req, res, next) => {
   try {
@@ -78,28 +107,7 @@ app.use("/api/chatbot", require("./routes/chatbotRoutes"));
 app.use("/api/coupon", couponRoutes);
 app.use("/api/super-admin", superAdminRoutes);
 
-// Image Upload Endpoint (Cloudinary)
-const { upload, uploadToCloudinary } = require("./middleware/upload");
-app.post("/api/upload", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, error: "No file provided" });
-    }
-    const result = await uploadToCloudinary(
-      req.file.buffer,
-      req.file.originalname,
-      "bengal_creations"
-    );
-    res.json({
-      success: true,
-      url: result.url || result.secureUrl,
-      secure_url: result.secureUrl || result.url,
-    });
-  } catch (err) {
-    console.error("Cloudinary upload error:", err);
-    res.status(500).json({ success: false, error: err.message || "Failed to upload image" });
-  }
-});
+
 
 // Public platform settings (for frontend checkout to read charges)
 app.get("/api/settings", async (req, res) => {

@@ -4,11 +4,11 @@ const cloudinary = require("../config/cloudinary");
 const memoryStorage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-  const allowed = /jpg|png|jpeg|pdf|doc|docx|txt|gif|webp/;
-  const ext = allowed.test(file.originalname.split(".").pop().toLowerCase());
-  const mimeType = allowed.test(file.mimetype);
+  const allowed = /jpg|png|jpeg|pdf|doc|docx|txt|gif|webp|avif|heic|heif|svg/;
+  const ext = file && file.originalname ? allowed.test(file.originalname.split(".").pop().toLowerCase()) : false;
+  const mimeType = file && file.mimetype ? allowed.test(file.mimetype) : false;
 
-  if (ext || mimeType) {
+  if (ext || mimeType || !file || !file.originalname) {
     cb(null, true);
   } else {
     cb(new Error("Only images, PDFs, and documents are allowed"), false);
@@ -21,13 +21,15 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 });
 
-const uploadToCloudinary = (buffer, originalname, folder = "uploads") => {
+const uploadToCloudinary = (buffer, originalname = "file", folder = "uploads") => {
   return new Promise((resolve, reject) => {
+    const rawName = originalname ? originalname.split(".")[0] : "file";
+    const safeName = rawName.replace(/[^a-zA-Z0-9]/g, "_");
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder,
         resource_type: "auto",
-        public_id: `${Date.now()}_${originalname.split(".")[0].replace(/[^a-zA-Z0-9]/g, "_")}`,
+        public_id: `${Date.now()}_${safeName || "file"}`,
       },
       (error, result) => {
         if (error) reject(error);
