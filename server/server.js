@@ -24,17 +24,23 @@ const port = process.env.PORT || 5000;
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
+
+// Always allow both www and non-www of the primary domain
+const alwaysAllowed = [
+  "https://bengalcreations.in",
+  "https://www.bengalcreations.in",
+];
+
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin) return cb(null, true);
     if (
-      allowedOrigins.length === 0 ||
+      alwaysAllowed.includes(origin) ||
       allowedOrigins.includes(origin) ||
-      origin.includes("bengalcreations.in") ||
+      origin.endsWith(".bengalcreations.in") ||
       origin.endsWith(".vercel.app") ||
       origin.includes("localhost") ||
-      origin.includes("127.0.0.1") ||
-      origin.includes("localhost:5173")
+      origin.includes("127.0.0.1")
     ) {
       return cb(null, true);
     }
@@ -187,7 +193,7 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error("Server error:", err);
   const origin = req.headers.origin;
-  if (origin && (allowedOrigins.includes(origin) || origin.includes("bengalcreations.in") || origin.endsWith(".vercel.app") || origin.includes("localhost"))) {
+  if (origin && (alwaysAllowed.includes(origin) || allowedOrigins.includes(origin) || origin.endsWith(".bengalcreations.in") || origin.endsWith(".vercel.app") || origin.includes("localhost"))) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
   }
