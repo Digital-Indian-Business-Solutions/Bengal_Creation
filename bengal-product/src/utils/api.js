@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const BASE = 'https://api.bengalcreations.in/api/products';
+const BASE = (process.env.REACT_APP_API_URL || 'https://api.bengalcreations.in/api') + '/products';
+
 
 export const api = {
   getProducts: () => axios.get(`${BASE}/all`),

@@ -17,13 +17,15 @@ import {
 /* ─── Helper to safely resolve product image URL ────── */
 const getProductImg = (p) => {
   if (!p) return null;
-  if (typeof p.thumb === "string" && p.thumb.length > 0) return p.thumb;
-  if (Array.isArray(p.images) && p.images.length > 0) {
-    const first = p.images[0];
-    if (typeof first === "string") return first;
-    if (first && typeof first === "object" && first.url) return first.url;
+  if (typeof p.thumb === "string" && p.thumb.trim().length > 0) return p.thumb;
+  if (Array.isArray(p.images)) {
+    const valid = p.images.filter((img) => (typeof img === "string" && img.trim().length > 0) || (img && typeof img === "object" && img.url));
+    if (valid.length > 0) {
+      const first = valid[0];
+      return typeof first === "string" ? first : first.url;
+    }
   }
-  if (typeof p.images === "string") return p.images;
+  if (typeof p.images === "string" && p.images.trim().length > 0) return p.images;
   return null;
 };
 
@@ -272,12 +274,18 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
         const item = imageFiles[i];
         if (item instanceof File) {
           const uploadedUrl = await uploadImage(item);
-          imageUrls.push(uploadedUrl);
-        } else if (typeof item === "string" && item.length > 0) {
+          if (uploadedUrl && typeof uploadedUrl === "string") imageUrls.push(uploadedUrl);
+        } else if (typeof item === "string" && item.trim().length > 0 && !item.startsWith("blob:")) {
           imageUrls.push(item);
-        } else if (typeof images[i] === "string" && images[i].length > 0) {
+        } else if (typeof images[i] === "string" && images[i].trim().length > 0 && !images[i].startsWith("blob:")) {
           imageUrls.push(images[i]);
         }
+      }
+
+      const validImages = imageUrls.filter((url) => typeof url === "string" && url.trim().length > 0);
+      if (validImages.length < 1) {
+        onShowToast("⚠️ Image upload failed. Please select and upload the image again.");
+        return;
       }
 
       const validBullets = bulletPoints.map((b) => b.trim()).filter(Boolean);
@@ -298,7 +306,7 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
         district: form.district,
         description: finalDesc,
         vendor: currentUser._id,
-        images: imageUrls,
+        images: validImages,
         variants: isFashionCat ? variants : [],
       };
 

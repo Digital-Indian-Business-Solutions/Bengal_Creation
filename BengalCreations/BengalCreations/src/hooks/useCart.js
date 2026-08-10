@@ -23,14 +23,14 @@ export function useCart(showToast, navigate, currentUser) {
   }, []);
 
   const addToCart = useCallback(
-    async (productId) => {
+    async (productId, variant = "") => {
       if (!currentUser?._id) {
         showToast("Please login to add items to your cart");
         navigate("/login");
         return;
       }
       try {
-        const data = await addToCartAPI(productId, currentUser._id);
+        const data = await addToCartAPI(productId, currentUser._id, variant);
         if (data.cart?.items) setCart(data.cart.items);
         showToast("Product added to cart! 🛒");
       } catch (err) {

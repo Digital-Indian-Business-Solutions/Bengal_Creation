@@ -5,6 +5,7 @@ const orderItemSchema = new mongoose.Schema({
   quantity: { type: Number, required: true },
   vendor:   { type: mongoose.Schema.Types.ObjectId, ref: "Vendor" },
   price:    Number,
+  variant:  { type: String, default: "" },  // selected size/variant saved with order
 });
 
 const orderSchema = new mongoose.Schema({

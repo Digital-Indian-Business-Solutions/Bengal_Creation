@@ -12,7 +12,8 @@ const cartSchema = new mongoose.Schema({
     },
     vendorId: String,
     quantity: Number,
-    price: Number
+    price: Number,
+    variant: { type: String, default: "" }  // selected size/variant
   }],
   followUp: {
         type: String,

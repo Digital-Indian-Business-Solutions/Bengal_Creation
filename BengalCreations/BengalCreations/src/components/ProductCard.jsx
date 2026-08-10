@@ -20,10 +20,10 @@ const getShortName = (name) => {
   return (
     <div onClick={() => onShowProduct(p.id)} className="product-card">
       <div className="product-img" >
-        {p.thumb ? (
-          <img src={p.thumb} alt={p.name} loading="lazy" />
+        {p.thumb || (Array.isArray(p.images) && p.images.length > 0 ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0]?.url) : null) ? (
+          <img src={p.thumb || (typeof p.images[0] === 'string' ? p.images[0] : p.images[0]?.url)} alt={p.name} loading="lazy" />
         ) : (
-          <span style={{ fontSize: 64 }}>{p.emoji}</span>
+          <span style={{ fontSize: 64 }}>{p.emoji || "🛍️"}</span>
         )}
         {disc > 0 && <div className="product-badge">{disc}% OFF</div>}
         <button

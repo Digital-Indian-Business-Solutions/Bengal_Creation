@@ -85,7 +85,7 @@ export default function ProductDetail({ setSidebarOpen }) {
                 {images.map((img, i) => (
                   <button key={i} onClick={() => setActiveImg(i)}
                     className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${i === activeImg ? 'border-saffron-500' : 'border-ink-100 hover:border-ink-300'}`}>
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={img} alt="" className="w-full h-full object-contain p-1" />
                   </button>
                 ))}
               </div>

@@ -41,6 +41,12 @@ function ProductDetailPage({
       .then((product) => {
         console.log("Fetched product:", product);
         setP(product);
+        // Auto-select XL if available, otherwise first available variant
+        if (Array.isArray(product.variants) && product.variants.length > 0) {
+          const xlVariant = product.variants.find((v) => v.size?.toUpperCase() === "XL" && v.stock > 0);
+          const firstAvailable = product.variants.find((v) => v.stock > 0);
+          setSelectedSize(xlVariant?.size || firstAvailable?.size || product.variants[0]?.size || null);
+        }
       })
       .catch((err) => {
         console.error("Error fetching product:", err);
@@ -197,26 +203,6 @@ function ProductDetailPage({
       <div className="pd-grid">
         {/* Gallery */}
         <div className="pd-gallery">
-          <div className="pd-main-img">
-            <img src={imgs[imgIdx]?.url} alt={imgs[imgIdx]?.label} />
-            <div className="pd-img-label">{imgs[imgIdx]?.label}</div>
-            {imgs.length > 1 && (
-              <>
-                <button
-                  className="pd-img-nav prev"
-                  onClick={() => changeImg(-1)}
-                >
-                  ‹
-                </button>
-                <button
-                  className="pd-img-nav next"
-                  onClick={() => changeImg(1)}
-                >
-                  ›
-                </button>
-              </>
-            )}
-          </div>
           <div className="pd-thumbnails">
             {imgs.map((img, i) => (
               <div
@@ -227,6 +213,9 @@ function ProductDetailPage({
                 <img src={img.url} alt={img.label} loading="lazy" />
               </div>
             ))}
+          </div>
+          <div className="pd-main-img">
+            <img src={imgs[imgIdx]?.url} alt={imgs[imgIdx]?.label} />
           </div>
         </div>
 
@@ -286,83 +275,50 @@ function ProductDetailPage({
               </span>
             )}
           </div>
-          <p className="pd-desc" style={{ whiteSpace: "pre-line" }}>{p.desc}</p>
+          {/* Description with bullet points */}
+          <div className="pd-desc-section">
+            {p.desc && p.desc.trim() && (
+              <ul className="pd-desc-bullets">
+                {p.desc
+                  .split(/\n|\. /)
+                  .map((s) => s.trim())
+                  .filter((s) => s.length > 0)
+                  .map((sentence, idx) => (
+                    <li key={idx}>{sentence.replace(/\.$/, "")}</li>
+                  ))}
+              </ul>
+            )}
+          </div>
 
           {Array.isArray(p.variants) && p.variants.length > 0 && (
-            <div style={{ margin: "16px 0", background: "#fafbff", padding: 14, borderRadius: 12, border: "1px solid #cbd5e1" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>Select Size:</span>
-                <button
-                  type="button"
-                  onClick={() => setShowSizeChart(!showSizeChart)}
-                  style={{ background: "none", border: "none", color: "#7a1c2e", fontSize: 12, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
-                >
-                  📏 {showSizeChart ? "Hide Size Chart" : "View Size Chart"}
-                </button>
+            <div className="pd-variants-section">
+              <div className="pd-variants-label">
+                Size: <strong>{selectedSize || "—"}</strong>
               </div>
-
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+              <div className="pd-variants-grid">
                 {p.variants.map((v) => {
                   const isSelected = selectedSize === v.size;
                   const outOfStock = v.stock === 0;
+                  const variantPrice = v.price || p.price;
+                  const variantOriginal = v.orginalPrice || v.originalPrice || p.original;
                   return (
                     <button
                       key={v.size}
                       type="button"
                       disabled={outOfStock}
                       onClick={() => setSelectedSize(v.size)}
-                      style={{
-                        padding: "6px 14px",
-                        borderRadius: 8,
-                        border: isSelected ? "2px solid #7a1c2e" : "1.5px solid #cbd5e1",
-                        background: isSelected ? "#7a1c2e" : outOfStock ? "#f1f5f9" : "white",
-                        color: isSelected ? "white" : outOfStock ? "#94a3b8" : "#1e293b",
-                        fontWeight: 700,
-                        fontSize: 13,
-                        cursor: outOfStock ? "not-allowed" : "pointer",
-                        textDecoration: outOfStock ? "line-through" : "none",
-                      }}
+                      className={`pd-variant-card${isSelected ? " selected" : ""}${outOfStock ? " out-of-stock" : ""}`}
                     >
-                      {v.size}
+                      <span className="pd-variant-size">{v.size}</span>
+                      <span className="pd-variant-price">₹{variantPrice?.toLocaleString()}</span>
+                      {variantOriginal > variantPrice && (
+                        <span className="pd-variant-original">₹{variantOriginal?.toLocaleString()}</span>
+                      )}
+                      {outOfStock && <span className="pd-variant-oos">Out of stock</span>}
                     </button>
                   );
                 })}
               </div>
-
-              {selectedSize && (
-                <div style={{ fontSize: 12, color: "#16a34a", fontWeight: 600 }}>
-                  ✓ Size {selectedSize} selected ({p.variants.find((v) => v.size === selectedSize)?.stock || 0} units available)
-                </div>
-              )}
-
-              {showSizeChart && (
-                <div style={{ marginTop: 12, overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, background: "white", borderRadius: 8, overflow: "hidden", border: "1px solid #cbd5e1" }}>
-                    <thead>
-                      <tr style={{ background: "#e2e8f0", color: "#1e293b", fontWeight: "bold" }}>
-                        <th style={{ padding: "6px", textAlign: "left" }}>Label Size</th>
-                        <th style={{ padding: "6px", textAlign: "center" }}>Chest (in)</th>
-                        <th style={{ padding: "6px", textAlign: "center" }}>Waist (in)</th>
-                        <th style={{ padding: "6px", textAlign: "center" }}>Sleeve (in)</th>
-                        <th style={{ padding: "6px", textAlign: "center" }}>Shoulder (in)</th>
-                        <th style={{ padding: "6px", textAlign: "center" }}>Length (in)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {p.variants.map((v) => (
-                        <tr key={v.size} style={{ borderTop: "1px solid #e2e8f0", background: selectedSize === v.size ? "#fffbeb" : "white" }}>
-                          <td style={{ padding: "6px", fontWeight: "bold", background: "#f8fafc" }}>{v.size}</td>
-                          <td style={{ padding: "6px", textAlign: "center" }}>{v.chest || "-"}</td>
-                          <td style={{ padding: "6px", textAlign: "center" }}>{v.waist || "-"}</td>
-                          <td style={{ padding: "6px", textAlign: "center" }}>{v.sleeve || "-"}</td>
-                          <td style={{ padding: "6px", textAlign: "center" }}>{v.shoulder || "-"}</td>
-                          <td style={{ padding: "6px", textAlign: "center" }}>{v.length || "-"}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
             </div>
           )}
           <div className="pd-meta">
@@ -386,7 +342,7 @@ function ProductDetailPage({
               className="btn-gold"
               style={{ flex: 1 }}
               onClick={() => {
-                onAddCart(p.id);
+                onAddCart(p.id, selectedSize || "");
                 openCart();
               }}
             >

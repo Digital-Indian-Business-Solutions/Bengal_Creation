@@ -1,30 +1,42 @@
 // ─── Base URL ─────────────────────────────────────────────────────────────────
 export const API = import.meta.env.VITE_API || "http://localhost:5000/api";
 
+
 // ─── Product helper: transform raw server product to app shape ────────────────
-export const transformProduct = (item) => ({
-  id: item._id,
-  name: item.name,
-  vendor: item.vendor?.shopName || "Unknown Store",
-  vendorId: item.vendor?._id,
-  category: item.category?.name || "Uncategorized",
-  price: item.price,
-  original: item.orginalPrice,
-  district: item.district?.replace("📍 ", "") || "",
-  rating: item.rating || 0,
-  reviews: item.reviews || 0,
-  emoji: item.emoji || "🛍️",
-  stock: item.stock,
-  thumb: item.images?.[0] || null,
-  images:
-    item.images?.map((url, i) => ({
-      url,
-      label: i === 0 ? "Front View" : `View ${i + 1}`,
-    })) || [],
-  desc: item.description || "",
-  isActive: item.isActive,
-  variants: item.variants || [],
-});
+export const transformProduct = (item) => {
+  const validImages = Array.isArray(item.images)
+    ? item.images.filter((img) => typeof img === "string" && img.trim().length > 0)
+    : (typeof item.images === "string" && item.images.trim().length > 0 ? [item.images] : []);
+
+  const thumbUrl = (typeof item.thumb === "string" && item.thumb.trim().length > 0)
+    ? item.thumb
+    : (validImages.length > 0 ? validImages[0] : null);
+
+  return {
+    id: item._id,
+    name: item.name,
+    vendor: item.vendor?.shopName || "Unknown Store",
+    vendorId: item.vendor?._id,
+    category: item.category?.name || "Uncategorized",
+    price: item.price,
+    original: item.orginalPrice,
+    district: item.district?.replace("📍 ", "") || "",
+    rating: item.rating || 0,
+    reviews: item.reviews || 0,
+    emoji: item.emoji || "🛍️",
+    stock: item.stock,
+    thumb: thumbUrl,
+    images:
+      validImages.map((url, i) => ({
+        url,
+        label: i === 0 ? "Front View" : `View ${i + 1}`,
+      })),
+    desc: item.description || "",
+    isActive: item.isActive,
+    variants: item.variants || [],
+  };
+};
+
 
 // ─── Vendor helper ────────────────────────────────────────────────────────────
 export const transformVendor = (v) => ({
@@ -187,11 +199,11 @@ export const fetchCart = async (userId) => {
   return data?.items || data?.cart?.items || [];
 };
 
-export const addToCartAPI = async (productId, userId) => {
+export const addToCartAPI = async (productId, userId, variant = "") => {
   const res = await fetch(`${API}/cart/add`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ productId, quantity: 1, user: { id: userId } }),
+    body: JSON.stringify({ productId, quantity: 1, user: { id: userId }, variant }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Failed to add to cart");

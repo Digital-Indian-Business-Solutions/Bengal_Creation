@@ -71,6 +71,7 @@ const createOrder = async (req, res) => {
     vendor:   item.vendorId,
     quantity: item.quantity,
     price:    item.price,
+    variant:  item.variant || "",
   }));
 
   const order = new Order({

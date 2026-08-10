@@ -139,7 +139,9 @@ function Carousel({
                   <SkeletonCard key={i} />
                 ))
               : safeProducts.map((p) => {
-                  const rawImg = p?.images?.[0]?.url || p?.thumb;
+                  const rawImg = p?.thumb || p?.images?.[0]?.url || (typeof p?.images?.[0] === 'string' ? p.images[0] : null);
+
+
                   const disc =
                     p.original > p.price
                       ? Math.round((1 - p.price / p.original) * 100)
@@ -158,11 +160,7 @@ function Carousel({
                       >
                         {rawImg ? (
                           <img
-                            src={
-                              rawImg.includes("cloudinary")
-                                ? cloudinaryResize(rawImg, 360)
-                                : rawImg
-                            }
+                            src={rawImg}
                             alt={p.name}
                             loading="lazy"
                             style={{
@@ -173,7 +171,9 @@ function Carousel({
                             }}
                             onError={(e) => {
                               e.target.style.display = "none";
-                              e.target.nextSibling.style.display = "flex";
+                              if (e.target.nextSibling) {
+                                e.target.nextSibling.style.display = "flex";
+                              }
                             }}
                           />
                         ) : null}

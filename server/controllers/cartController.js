@@ -3,7 +3,7 @@ const Product = require("../models/product");
 
 const addToCart = async (req, res) => {
   try {
-    const { productId, quantity, user } = req.body;
+    const { productId, quantity, user, variant } = req.body;
 
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ msg: "Product not found" });
@@ -15,12 +15,14 @@ const addToCart = async (req, res) => {
       cart = new Cart({ customer: userId, items: [], totalAmount: 0 });
     }
 
-    const existingItem = cart.items.find((item) => item.product.toString() === productId);
+    const existingItem = cart.items.find(
+      (item) => item.product.toString() === productId && item.variant === (variant || "")
+    );
     if (existingItem) {
       existingItem.quantity += quantity;
       cart.totalAmount += product.price * quantity;
     } else {
-      cart.items.push({ product: productId, vendorId: product.vendor, quantity, price: product.price });
+      cart.items.push({ product: productId, vendorId: product.vendor, quantity, price: product.price, variant: variant || "" });
       cart.totalAmount += product.price * quantity;
     }
 

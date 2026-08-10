@@ -33,7 +33,8 @@ app.use(cors({
       origin.includes("bengalcreations.in") ||
       origin.endsWith(".vercel.app") ||
       origin.includes("localhost") ||
-      origin.includes("127.0.0.1")
+      origin.includes("127.0.0.1") ||
+      origin.includes("localhost:5173")
     ) {
       return cb(null, true);
     }
@@ -198,7 +199,7 @@ app.use((err, req, res, next) => {
 });
 
 // ── Local server ──────────────────────────────────────────────────────────────
-if (process.env.NODE_ENV !== "production") {
+if (require.main === module || process.env.LISTEN_LOCAL === "true") {
   app.listen(port, () => {
     console.log(`🚀 Server running on http://localhost:${port}`);
     console.log(`📚 API Docs at http://localhost:${port}/api-docs`);
