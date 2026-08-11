@@ -127,43 +127,17 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
   }, [initLoaded, hasMore, loading, loadMore]);
 
   const applyFiltersWith = (newFilters) => {
-    // if (newFilters.priceMin == "" && newFilters.priceMax != "") {
-    //   setError("Please enter Min price");
-    //   return;
-    // }
-
-    // else if (newFilters.priceMax == "" && newFilters.priceMin != "") {
-    //   setError("Please enter Max price");
-    //   return;
-    // }
-    // else if (newFilters.priceMax < newFilters.priceMin) {
-    //   setError("Max price must be greater than Min price");
-    //   return; /////////////////////////////////////////////////////////////
-    // }
-    // else if(newFilters.priceMin < newFilters.priceMax){
-    //   setError("")
-    // }
-    // else{
-    //   setError("")
-    // }
-
     const min = Number(newFilters.priceMin);
     const max = Number(newFilters.priceMax);
 
-    // If one is empty → don't validate yet
-    if (!newFilters.priceMin || !newFilters.priceMax) {
-      setError("");
-      setBgc("none")
-      return;
-    }
-
-    if (max < min) {
+    if (newFilters.priceMin && newFilters.priceMax && max < min) {
       setError("Max price must be greater than Min price");
       setBgc("red");
       return;
     }
 
     setError("");
+    setBgc("none");
 
     resetAndLoad(newFilters, ratingFilter);
   };

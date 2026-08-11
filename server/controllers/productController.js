@@ -48,6 +48,50 @@ const createProduct = async (req, res) => {
 // Helper to escape regex special characters
 const escapeRegex = (str = "") => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+// Advanced Fuzzy & Phonetic Pattern Builder
+const makeFuzzyTokenPattern = (token) => {
+  const escaped = escapeRegex(token);
+  if (/^men'?s?$/i.test(token) || /^man$/i.test(token)) {
+    return "\\b(men|mens|man|gents|male)\\b";
+  }
+  if (/^women'?s?$/i.test(token) || /^woman$/i.test(token)) {
+    return "\\b(women|womens|woman|ladies|female)\\b";
+  }
+
+  let phoneticPattern = token
+    .replace(/(.)\1+/g, "$1")
+    .replace(/ch/gi, "(ch|c)")
+    .replace(/c(?!h)/gi, "(c|ch)")
+    .replace(/sh/gi, "(sh|s)")
+    .replace(/s(?!h)/gi, "(s|sh)")
+    .replace(/kh/gi, "(kh|k)")
+    .replace(/k(?!h)/gi, "(k|kh)")
+    .replace(/th/gi, "(th|t)")
+    .replace(/t(?!h)/gi, "(t|th)")
+    .replace(/dh/gi, "(dh|d)")
+    .replace(/d(?!h)/gi, "(d|dh)")
+    .replace(/bh/gi, "(bh|b)")
+    .replace(/b(?!h)/gi, "(b|bh)")
+    .replace(/gh/gi, "(gh|g)")
+    .replace(/g(?!h)/gi, "(g|gh)")
+    .replace(/ee/gi, "(ee|i)")
+    .replace(/oo/gi, "(oo|u)");
+
+  let flexLetters = token
+    .split("")
+    .map(ch => /[a-z]/i.test(ch) ? `${ch}+` : escapeRegex(ch))
+    .join("");
+
+  let patterns = [escaped, phoneticPattern, flexLetters];
+
+  if (token.length >= 4) {
+    const baseStem = escapeRegex(token.replace(/(.)\1+$/, "$1").slice(0, -1));
+    patterns.push(`${baseStem}[a-z]{0,2}`);
+  }
+
+  return `(${patterns.join("|")})`;
+};
+
 // MongoDB Atlas Search implementation
 const tryAtlasSearch = async ({ search, categoryId, district, priceMin, priceMax, gender, sort, skip, limit }) => {
   const lowerSearch = search.toLowerCase();
@@ -220,23 +264,10 @@ const fallbackMongoSearch = async ({ search, categoryId, district, priceMin, pri
     const hasMaleIntent = /\b(men|mens|man|gents|male|boys|boy)\b/i.test(lowerSearch);
     const hasFemaleIntent = /\b(women|womens|woman|ladies|female|girls|girl)\b/i.test(lowerSearch);
 
-    const tokenRegexes = rawTokens.map(token => {
-      const escaped = escapeRegex(token);
-      let pattern = `\\b${escaped}`;
-      
-      if (/^men'?s?$/i.test(token) || /^man$/i.test(token)) {
-        pattern = "\\b(men|mens|man|gents|male)\\b";
-      } else if (/^women'?s?$/i.test(token) || /^woman$/i.test(token)) {
-        pattern = "\\b(women|womens|woman|ladies|female)\\b";
-      } else if (token.length >= 4) {
-        const baseStem = escapeRegex(token.replace(/(.)\1+$/, "$1").slice(0, -1));
-        pattern = `\\b(${escaped}|${baseStem}[a-z]{0,2})`;
-      }
-      return new RegExp(pattern, "i");
-    });
+    const tokenRegexes = rawTokens.map(token => new RegExp(makeFuzzyTokenPattern(token), "i"));
 
     const categoryDocs = await Category.find({
-      name: { $regex: new RegExp(rawTokens.map(t => escapeRegex(t)).join("|"), "i") }
+      $or: tokenRegexes.map(rgx => ({ name: { $regex: rgx } }))
     }).select("_id");
     const matchedCatIds = categoryDocs.map(c => c._id);
 
@@ -433,19 +464,7 @@ const getSearchSuggestions = async (req, res) => {
     const queryStr = q.trim();
     const rawTokens = queryStr.split(/\s+/).filter(Boolean);
 
-    const tokenRegexes = rawTokens.map(token => {
-      const escaped = escapeRegex(token);
-      let pattern = escaped;
-      if (/^men'?s?$/i.test(token) || /^man$/i.test(token)) {
-        pattern = "(men|mens|man|gents)";
-      } else if (/^women'?s?$/i.test(token) || /^woman$/i.test(token)) {
-        pattern = "(women|womens|woman|ladies)";
-      } else if (token.length >= 4) {
-        const baseStem = escapeRegex(token.replace(/(.)\1+$/, "$1").slice(0, -1));
-        pattern = `(${escaped}|${baseStem}[a-z]{0,2})`;
-      }
-      return new RegExp(pattern, "i");
-    });
+    const tokenRegexes = rawTokens.map(token => new RegExp(makeFuzzyTokenPattern(token), "i"));
 
     const categoryDocs = await Category.find({
       $or: tokenRegexes.map(rgx => ({ name: { $regex: rgx } }))
@@ -539,7 +558,7 @@ const getAllProducts = async (req, res) => {
       }
     }
 
-    if (!results) {
+    if (!results || !results.products || results.products.length === 0) {
       results = await fallbackMongoSearch({
         search,
         categoryId,
