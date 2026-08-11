@@ -12,6 +12,7 @@ import {
   fetchRefundRequests,
   processRefund,
   fetchOrderReport,
+  toggleProductStatus,
 } from "../api/api";
 
 /* ─── Helper to safely resolve product image URL ────── */
@@ -94,6 +95,7 @@ function VendorPage({ currentUser, onShowToast, WB_DISTRICTS, doLogout }) {
   const [editIdx, setEditIdx]             = useState(null);
   const [form, setForm] = useState({ name: "", price: "", originPrice: "", stock: "", district: "", desc: "" });
   const [bulletPoints, setBulletPoints] = useState([""]);
+  const [submitting, setSubmitting] = useState(false);
   const [variants, setVariants] = useState([
     { size: "S", chest: "38", waist: "37", sleeve: "20", shoulder: "15", length: "40", stock: 0 },
     { size: "M", chest: "40", waist: "39", sleeve: "22", shoulder: "15", length: "40", stock: 0 },
@@ -261,6 +263,7 @@ function VendorPage({ currentUser, onShowToast, WB_DISTRICTS, doLogout }) {
   };
 
   const saveProduct = async () => {
+    if (submitting) return; // prevent double-click duplicates
     if (!form.name)     { onShowToast("⚠️ Enter product name"); return; }
     if (!form.price)    { onShowToast("⚠️ Enter price"); return; }
     if (!form.stock)    { onShowToast("⚠️ Enter stock"); return; }
@@ -268,6 +271,7 @@ function VendorPage({ currentUser, onShowToast, WB_DISTRICTS, doLogout }) {
     if (images.length < 1 || !images[0]) { onShowToast("⚠️ Upload at least 1 Main Cover Photo."); return; }
     if (images.length > 5) { onShowToast("⚠️ Max 5 images allowed (1 Main + 4 Side photos)."); return; }
 
+    setSubmitting(true);
     try {
       const imageUrls = [];
       for (let i = 0; i < imageFiles.length; i++) {
@@ -320,10 +324,14 @@ function VendorPage({ currentUser, onShowToast, WB_DISTRICTS, doLogout }) {
       }
 
       fetchVendorProducts(currentUser._id).then(setDashProducts).catch(console.error);
+      resetForm();
+      navTo("myproducts");
     } catch (err) {
       console.error(err);
       onShowToast("⚠️ Something went wrong. Please try again.");
-    } finally { resetForm(); navTo("myproducts"); }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const deleteProduct = useCallback(async (i) => {
@@ -403,6 +411,18 @@ function VendorPage({ currentUser, onShowToast, WB_DISTRICTS, doLogout }) {
       await processRefund({ orderId, action });
       setRefunds((prev) => prev.map((r) => r._id === orderId ? { ...r, refundStatus: action === "approve" ? "Processed" : "Rejected" } : r));
     } catch (err) { alert("Failed: " + err.message); }
+  };
+
+  const handleToggleStatus = async (productId) => {
+    try {
+      const res = await toggleProductStatus(productId);
+      setDashProducts((prev) =>
+        prev.map((p) => (p._id === productId || p.id === productId) ? { ...p, isActive: res.isActive } : p)
+      );
+      onShowToast(res.isActive ? "✅ Product is now Active — visible on homepage" : "🔴 Product set to Inactive — hidden from homepage");
+    } catch (err) {
+      onShowToast("⚠️ Failed to update product status");
+    }
   };
 
   /* ═══════════════════════════════════════════════════════
@@ -576,7 +596,12 @@ function VendorPage({ currentUser, onShowToast, WB_DISTRICTS, doLogout }) {
             <div className="dp-card">
               <div className="dp-card-header">
                 <div>
-                  <h2 className="dp-card-title">My Products</h2>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <h2 className="dp-card-title">My Products</h2>
+                    <span style={{ background: "#7a1c2e", color: "#fff", fontSize: 12, fontWeight: 800, padding: "2px 10px", borderRadius: 20, letterSpacing: 0.5 }}>
+                      {dashProducts.length}
+                    </span>
+                  </div>
                   <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>
                     Manage product inventory, prices, and view order analytics
                   </div>
@@ -649,7 +674,27 @@ function VendorPage({ currentUser, onShowToast, WB_DISTRICTS, doLogout }) {
                               </span>
                             </td>
                             <td>
-                              <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                              <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", alignItems: "center" }}>
+                                <select
+                                  value={p.isActive === false ? "inactive" : "active"}
+                                  onChange={() => handleToggleStatus(p._id || p.id)}
+                                  style={{
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    padding: "4px 8px",
+                                    borderRadius: 20,
+                                    border: "1.5px solid",
+                                    cursor: "pointer",
+                                    outline: "none",
+                                    background: p.isActive === false ? "#f1f5f9" : "#dcfce7",
+                                    color: p.isActive === false ? "#64748b" : "#16a34a",
+                                    borderColor: p.isActive === false ? "#cbd5e1" : "#86efac",
+                                    minWidth: 90,
+                                  }}
+                                >
+                                  <option value="active">✅ Active</option>
+                                  <option value="inactive">🔴 Inactive</option>
+                                </select>
                                 <button className="dp-btn-edit" onClick={() => editProduct(i)}>✏ Edit</button>
                                 <button className="dp-btn-delete" onClick={() => deleteProduct(i)}>🗑</button>
                               </div>
@@ -888,8 +933,16 @@ function VendorPage({ currentUser, onShowToast, WB_DISTRICTS, doLogout }) {
                     )}
                   </div>
 
-                  <button className="dp-submit-btn" onClick={saveProduct}>
-                    {editIdx !== null ? "💾 Save Changes" : "🚀 Publish Product"}
+                  <button
+                    className="dp-submit-btn"
+                    onClick={saveProduct}
+                    disabled={submitting}
+                    style={submitting ? { opacity: 0.6, cursor: "not-allowed" } : {}}
+                  >
+                    {submitting
+                      ? (editIdx !== null ? "⏳ Saving…" : "⏳ Publishing…")
+                      : (editIdx !== null ? "💾 Save Changes" : "🚀 Publish Product")
+                    }
                   </button>
                 </div>
 

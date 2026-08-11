@@ -54,9 +54,26 @@ export const transformVendor = (v) => ({
 
 // ─── Products ─────────────────────────────────────────────────────────────────
 // Paginated fetch — returns { products, pagination }
-export const fetchProductsPage = async ({ page = 1, limit = 10, search = "" } = {}) => {
+export const fetchProductsPage = async ({
+  page = 1,
+  limit = 10,
+  search = "",
+  category = "",
+  district = "",
+  priceMin = "",
+  priceMax = "",
+  gender = "",
+  sort = "",
+} = {}) => {
   const params = new URLSearchParams({ page, limit });
   if (search) params.set("search", search);
+  if (category) params.set("category", category);
+  if (district) params.set("district", district);
+  if (priceMin !== "" && priceMin !== null && priceMin !== undefined) params.set("priceMin", priceMin);
+  if (priceMax !== "" && priceMax !== null && priceMax !== undefined) params.set("priceMax", priceMax);
+  if (gender) params.set("gender", gender);
+  if (sort) params.set("sort", sort);
+
   const res = await fetch(`${API}/products?${params}`);
   if (!res.ok) throw new Error("Failed to fetch products");
   const data = await res.json();
@@ -65,16 +82,18 @@ export const fetchProductsPage = async ({ page = 1, limit = 10, search = "" } = 
     pagination: data.pagination,
   };
 };
-export const fetchProductsPageByCategory = async ({ page = 1, limit = 10, category } = {}) => {
-  const params = new URLSearchParams({ page, limit, category });
-  const res = await fetch(`${API}/products?${params}`);
-  if (!res.ok) throw new Error("Failed to fetch products");
-  const data = await res.json();
-  return {
-    products: (data.products || []).map(transformProduct).filter(Boolean),
-    pagination: data.pagination,
-  };
+
+export const fetchProductsPageByCategory = async ({ page = 1, limit = 10, category, search = "" } = {}) => {
+  return fetchProductsPage({ page, limit, category, search });
 };
+
+export const fetchSearchSuggestions = async (query = "") => {
+  if (!query || !query.trim()) return [];
+  const res = await fetch(`${API}/products/search/suggestions?q=${encodeURIComponent(query.trim())}`);
+  if (!res.ok) return [];
+  return res.json();
+};
+
 // Backwards compat — used by HomePage carousel initial load (first page only)
 export const fetchAllProducts = async () => {
   const { products } = await fetchProductsPage({ page: 1, limit: 10 });
@@ -106,6 +125,16 @@ export const updateProduct = async (id, formData) => {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || data.error || "Failed to update product");
+  return data;
+};
+
+export const toggleProductStatus = async (id) => {
+  const res = await fetch(`${API}/products/${id}/toggle-status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || data.error || "Failed to toggle status");
   return data;
 };
 

@@ -12,7 +12,9 @@ const {
   getProductByCategory,
   getProducs,
   getSearchSuggestions,
+  toggleProductStatus,
 } = require("../controllers/productController");
+
 
 router.post("/", createProduct);
 /*
@@ -73,6 +75,9 @@ router.get("/all", getProducs);
   #swagger.summary = 'Get all products'
   #swagger.responses[200] = { description: 'All products', schema: [{ $ref: '#/definitions/Product' }] }
 */
+// Search Suggestions Route
+router.get("/search/suggestions", getSearchSuggestions);
+
 router.get("/:id", getProductById);
 /*
   #swagger.tags = ['Products']
@@ -91,6 +96,14 @@ router.put("/:id", updateProduct);
   #swagger.responses[200] = { description: 'Updated product', schema: { $ref: '#/definitions/Product' } }
 */
 
+router.patch("/:id/toggle-status", toggleProductStatus);
+/*
+  #swagger.tags = ['Products']
+  #swagger.summary = 'Toggle product active/inactive status'
+  #swagger.parameters['id'] = { in: 'path', required: true, type: 'string' }
+  #swagger.responses[200] = { description: 'Status toggled', schema: { success: true, isActive: true } }
+*/
+
 router.delete("/:id", deleteProduct);
 /*
   #swagger.tags = ['Products']
@@ -98,7 +111,5 @@ router.delete("/:id", deleteProduct);
   #swagger.parameters['id'] = { in: 'path', required: true, type: 'string' }
   #swagger.responses[200] = { description: 'Product deleted', schema: { msg: 'Product deleted' } }
 */
-// Serach Suggations Route // 
-router.get("/search/suggestions", getSearchSuggestions);
 
 module.exports = router;

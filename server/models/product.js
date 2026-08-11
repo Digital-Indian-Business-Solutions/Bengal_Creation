@@ -47,6 +47,15 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    gender: {
+        type: String,
+        enum: ["Men", "Women", "Unisex", "Kids", ""],
+        default: ""
+    },
+    tags: [{
+        type: String,
+        trim: true
+    }],
     isActive: {
         type: Boolean,
         default: true

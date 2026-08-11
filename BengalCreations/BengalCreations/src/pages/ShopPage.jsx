@@ -38,36 +38,23 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
 
   const loaderRef = useRef(null);
 
-  // Shared fetch logic — uses category-specific endpoint when category filter is set
+  // Shared fetch logic — passes all filters to server-side search engine
   const doFetch = useCallback(async (pageNum, currentFilters) => {
-    if (currentFilters.category) {
-      return fetchProductsPageByCategory({
-        page: pageNum,
-        limit: PAGE_SIZE,
-        category: currentFilters.category,
-      });
-    }
     return fetchProductsPage({
       page: pageNum,
       limit: PAGE_SIZE,
       search: currentFilters.search,
+      category: currentFilters.category,
+      district: currentFilters.district,
+      priceMin: currentFilters.priceMin,
+      priceMax: currentFilters.priceMax,
     });
   }, []);
 
-  // Client-side filter for district / price / rating (not supported server-side)
+  // Client-side filter for rating (client-side property)
   const clientFilter = useCallback((prods, f, rating) => {
     return prods.filter((p) => {
-      if (f.district && p.district !== f.district) return false;
-      if (f.priceMin && p.price < parseInt(f.priceMin)) return false;
-      if (f.priceMax && p.price > parseInt(f.priceMax)) return false;
       if (rating > 0 && p.rating < rating) return false;
-      // When no category endpoint used, also filter by search name locally
-      if (
-        !f.category &&
-        f.search &&
-        !p.name.toLowerCase().includes(f.search.toLowerCase())
-      )
-        return false;
       return true;
     });
   }, []);

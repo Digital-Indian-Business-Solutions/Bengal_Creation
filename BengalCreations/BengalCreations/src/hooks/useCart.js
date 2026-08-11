@@ -15,8 +15,8 @@ export function useCart(showToast, navigate, currentUser) {
     if (!userId) return;
     try {
       const data = await fetchCart(userId);
-      console.log(data)
-      setCart(data.items || []);
+      const items = Array.isArray(data) ? data : (data?.items || data?.cart?.items || []);
+      setCart(items);
     } catch (err) {
       console.error("Failed to load cart:", err);
     }
@@ -31,19 +31,25 @@ export function useCart(showToast, navigate, currentUser) {
       }
       try {
         const data = await addToCartAPI(productId, currentUser._id, variant);
-        if (data.cart?.items) setCart(data.cart.items);
+        if (data.cart?.items) {
+          setCart(data.cart.items);
+        } else {
+          await loadCart(currentUser._id);
+        }
         showToast("Product added to cart! 🛒");
       } catch (err) {
         console.error("Cart error:", err);
         showToast(err.message || "Something went wrong");
       }
     },
-    [currentUser, showToast, navigate]
+    [currentUser, showToast, navigate, loadCart]
   );
 
   const removeFromCart = useCallback(
     async (productId) => {
       if (!currentUser?._id) return;
+      // Optimistic update
+      setCart((prev) => prev.filter((item) => item.product?._id !== productId && item._id !== productId));
       try {
         await removeFromCartAPI(productId, currentUser._id);
         await loadCart(currentUser._id);
@@ -51,6 +57,7 @@ export function useCart(showToast, navigate, currentUser) {
       } catch (err) {
         console.error("Remove from cart error:", err);
         showToast("Something went wrong");
+        await loadCart(currentUser._id);
       }
     },
     [currentUser, showToast, loadCart]
