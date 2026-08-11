@@ -74,7 +74,7 @@ export default function OrderModal({ lead, onClose }) {
 
 function ProductRow({ item }) {
   const [imgErr, setImgErr] = useState(false);
-  const img = item.images?.[0];
+  const img = item?.images?.[0];
   return (
     <div style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 10, padding: 13, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
       {/* Real product image from Cloudinary */}

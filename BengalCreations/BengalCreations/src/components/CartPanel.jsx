@@ -25,14 +25,16 @@ function CartPanel({ cart, isOpen, onClose, removeFromCart, onCheckout }) {
             </div>
           ) : (
             cart.map((item) => {
-              const p = item.product;
+              const p = item?.product;
+              if (!p) return null;
+              const imgUrl = p.thumb || (Array.isArray(p.images) && p.images.length > 0 ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0]?.url) : null);
               return (
-                <div className="cart-item" onClick={()=> navigate(`/product/${p._id}`)} key={item._id}>
+                <div className="cart-item" onClick={()=> navigate(`/product/${p._id}`)} key={item._id || p._id}>
                   <div className="cart-item-img">
-                    {p.images?.[0] ? (
-                      <img src={p.images[0]} alt={p.name}/>
+                    {imgUrl ? (
+                      <img src={imgUrl} alt={p.name || ""}/>
                     ) : (
-                      p.emoji
+                      p.emoji || "🛍️"
                     )}
                   </div>
                   <div className="cart-item-info">
@@ -41,7 +43,7 @@ function CartPanel({ cart, isOpen, onClose, removeFromCart, onCheckout }) {
                       {p.vendor}
                     </div>
                     <div className="cart-item-price">
-                      ₹{(p.price * (item.quantity || 1)).toLocaleString()}
+                      ₹{((p.price || 0) * (item.quantity || 1)).toLocaleString()}
                       {item.quantity > 1 && (
                         <span
                           style={{
@@ -57,7 +59,10 @@ function CartPanel({ cart, isOpen, onClose, removeFromCart, onCheckout }) {
                   </div>
                   <button
                     className="cart-item-remove"
-                    onClick={() => removeFromCart(p._id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFromCart(p._id);
+                    }}
                   >
                     ✕
                   </button>

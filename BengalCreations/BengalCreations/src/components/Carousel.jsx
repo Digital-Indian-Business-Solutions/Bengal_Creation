@@ -139,7 +139,8 @@ function Carousel({
                   <SkeletonCard key={i} />
                 ))
               : safeProducts.map((p) => {
-                  const rawImg = p?.thumb || p?.images?.[0]?.url || (typeof p?.images?.[0] === 'string' ? p.images[0] : null);
+                  if (!p) return null;
+                  const rawImg = p?.thumb || (Array.isArray(p?.images) && p.images.length > 0 ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0]?.url) : null);
 
 
                   const disc =

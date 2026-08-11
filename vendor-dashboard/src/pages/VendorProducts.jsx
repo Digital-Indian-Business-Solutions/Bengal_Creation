@@ -12,6 +12,7 @@ function safeStr(val) {
 }
 
 function ProductRow({ product }) {
+  if (!product) return null
   const [imgErr, setImgErr] = useState(false)
   const img = product.image || product.images?.[0] || product.thumbnail
 

@@ -304,18 +304,23 @@ function CheckoutPage({ cart, onPlaceOrder }) {
         {/* Order Summary */}
         <div className="order-summary">
           <h3 style={{ color: "var(--maroon)", marginBottom: 20 }}>Order Summary</h3>
-          {cart.map((p) => (
-            <div key={p.product._id} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ width: 50, height: 50, borderRadius: 8, overflow: "hidden", background: "var(--cream2)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
-                { (p.product.thumb || p.product.images?.[0]?.url || (typeof p.product.images?.[0] === 'string' ? p.product.images[0] : null)) ? <img src={p.product.thumb || p.product.images?.[0]?.url || p.product.images[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt="" /> : p.emoji}
+          {cart.map((p) => {
+            const prod = p?.product;
+            if (!prod) return null;
+            const imgUrl = prod.thumb || (Array.isArray(prod.images) && prod.images.length > 0 ? (typeof prod.images[0] === 'string' ? prod.images[0] : prod.images[0]?.url) : null);
+            return (
+              <div key={prod._id || p._id} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
+                <div style={{ width: 50, height: 50, borderRadius: 8, overflow: "hidden", background: "var(--cream2)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
+                  {imgUrl ? <img src={imgUrl} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt="" /> : (prod.emoji || p.emoji || "🛍️")}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "var(--maroon)", lineHeight: 1.3 }}>{prod.name}</div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Qty: {p.quantity || 1}</div>
+                </div>
+                <div style={{ fontWeight: 700, fontSize: 13, color: "var(--green)" }}>₹{((prod.price || 0) * (p.quantity || 1)).toLocaleString()}</div>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--maroon)", lineHeight: 1.3 }}>{p.product.name}</div>
-                <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Qty: {p.quantity || 1}</div>
-              </div>
-              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--green)" }}>₹{(p.product.price * (p.quantity || 1)).toLocaleString()}</div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Charge rows */}
           <div style={{ marginTop: 12 }}>

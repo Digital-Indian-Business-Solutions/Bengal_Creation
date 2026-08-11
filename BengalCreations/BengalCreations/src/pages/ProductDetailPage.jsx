@@ -493,6 +493,7 @@ function ProductDetailPage({
                   }}
                 >
                   {otherVendorProducts.map((op) => {
+                    if (!op) return null;
                     const d = op.original
                       ? Math.round((1 - op.price / op.original) * 100)
                       : 0;

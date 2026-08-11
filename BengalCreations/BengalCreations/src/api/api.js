@@ -4,6 +4,8 @@ export const API = import.meta.env.VITE_API || "http://localhost:5000/api";
 
 // ─── Product helper: transform raw server product to app shape ────────────────
 export const transformProduct = (item) => {
+  if (!item || typeof item !== "object") return null;
+
   const validImages = Array.isArray(item.images)
     ? item.images.filter((img) => typeof img === "string" && img.trim().length > 0)
     : (typeof item.images === "string" && item.images.trim().length > 0 ? [item.images] : []);
@@ -59,7 +61,7 @@ export const fetchProductsPage = async ({ page = 1, limit = 10, search = "" } = 
   if (!res.ok) throw new Error("Failed to fetch products");
   const data = await res.json();
   return {
-    products: data.products.map(transformProduct),
+    products: (data.products || []).map(transformProduct).filter(Boolean),
     pagination: data.pagination,
   };
 };
@@ -69,7 +71,7 @@ export const fetchProductsPageByCategory = async ({ page = 1, limit = 10, catego
   if (!res.ok) throw new Error("Failed to fetch products");
   const data = await res.json();
   return {
-    products: data.products.map(transformProduct),
+    products: (data.products || []).map(transformProduct).filter(Boolean),
     pagination: data.pagination,
   };
 };
@@ -83,7 +85,7 @@ export const fetchVendorProducts = async (vendorId) => {
   const res = await fetch(`${API}/products/vendor/${vendorId}`);
   if (!res.ok) throw new Error("Failed to fetch vendor products");
   const data = await res.json();
-  return data.map(transformProduct);
+  return (Array.isArray(data) ? data : []).map(transformProduct).filter(Boolean);
 };
 
 export const createProduct = async (formData) => {

@@ -251,7 +251,7 @@ function ProductRow({ product: p, selected, onToggle, onEdit, onDelete, onIncrea
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3 cursor-pointer" onClick={onView}>
-          {p.images?.[0]
+          {p?.images?.[0]
             ? <img src={p.images[0]} alt="" className="w-10 h-10 rounded-lg object-cover border border-ink-100 flex-shrink-0" />
             : <div className="w-10 h-10 rounded-lg bg-ink-100 flex items-center justify-center text-ink-300 flex-shrink-0 text-xs">IMG</div>
           }

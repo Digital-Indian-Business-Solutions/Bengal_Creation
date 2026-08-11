@@ -33,7 +33,7 @@ function RecentRow({ product }) {
     >
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
-          {product.images?.[0]
+          {product?.images?.[0]
             ? <img src={product.images[0]} alt="" className="w-8 h-8 rounded-lg object-cover border border-ink-100 flex-shrink-0" />
             : <div className="w-8 h-8 rounded-lg bg-ink-100 flex items-center justify-center text-ink-300 flex-shrink-0 text-xs">?</div>
           }
