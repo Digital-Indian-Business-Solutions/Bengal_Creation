@@ -132,7 +132,7 @@ const getChargePreview = async (req, res) => {
 
 const getOrdersByUser = async (req, res) => {
   const orders = await Order.find({ user: req.params.userId })
-    .populate("items.product", "name price")
+    .populate("items.product", "name price images orginalPrice variants")
     .populate("items.vendor", "shopName")
     .populate("address")
     .sort({ createdAt: -1 });
@@ -142,7 +142,7 @@ const getOrdersByUser = async (req, res) => {
 const getOrdersByStatus = async (req, res) => {
   const orders = await Order.find({ status: req.params.status })
     .populate("user", "name email")
-    .populate("items.product", "name price")
+    .populate("items.product", "name price images orginalPrice variants")
     .populate("items.vendor", "shopName")
     .populate("address")
     .sort({ createdAt: -1 });
@@ -152,7 +152,7 @@ const getOrdersByStatus = async (req, res) => {
 const getAllOrders = async (req, res) => {
   const orders = await Order.find()
     .populate("user", "name email phone")
-    .populate("items.product", "name price")
+    .populate("items.product", "name price images orginalPrice variants")
     .populate("items.vendor", "shopName")
     .populate("address")
     .sort({ createdAt: -1 });
