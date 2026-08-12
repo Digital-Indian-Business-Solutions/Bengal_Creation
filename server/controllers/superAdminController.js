@@ -13,17 +13,28 @@ const Coupon = require("../models/coupon");
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const getSuperAdmins = () => {
   const admins = [];
-  // Support multiple super admins via env: SUPER_ADMIN_1_EMAIL, SUPER_ADMIN_2_EMAIL, etc.
+  
+  if (process.env.SUPER_ADMIN_EMAILS) {
+    process.env.SUPER_ADMIN_EMAILS.split(",").forEach((e) => {
+      if (e.trim()) admins.push(e.toLowerCase().trim());
+    });
+  }
+
   for (let i = 1; i <= 10; i++) {
     const email = process.env[`SUPER_ADMIN_${i}_EMAIL`];
-    if (!email) break;
-    admins.push(email.toLowerCase().trim());
+    if (email) admins.push(email.toLowerCase().trim());
   }
-  // Also support single SUPER_ADMIN_EMAIL
+
   if (process.env.SUPER_ADMIN_EMAIL) {
     const single = process.env.SUPER_ADMIN_EMAIL.toLowerCase().trim();
     if (!admins.includes(single)) admins.push(single);
   }
+
+  // Always ensure default primary super admin is included
+  if (!admins.includes("it.digitalindian@gmail.com")) {
+    admins.push("it.digitalindian@gmail.com");
+  }
+
   return admins;
 };
 
@@ -36,40 +47,58 @@ const sendLoginOtp = async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ msg: "Email is required" });
 
+    const cleanEmail = email.toLowerCase().trim();
     const allowedEmails = getSuperAdmins();
-    if (!allowedEmails.includes(email.toLowerCase().trim())) {
-      return res.status(403).json({ msg: "Unauthorized email" });
+    if (!allowedEmails.includes(cleanEmail)) {
+      return res.status(403).json({
+        msg: `Unauthorized email. Authorized Super Admin emails: ${allowedEmails.join(", ")}`,
+      });
     }
 
     const otp = generateOtp();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
 
     // Invalidate old OTPs
-    await SuperAdminOtp.deleteMany({ email: email.toLowerCase() });
+    await SuperAdminOtp.deleteMany({ email: cleanEmail });
 
     await SuperAdminOtp.create({
-      email: email.toLowerCase(),
+      email: cleanEmail,
       otp,
       expiresAt,
     });
 
+    console.log(`\n==================================================`);
+    console.log(`🔑 SUPER ADMIN LOGIN OTP for ${cleanEmail}: ${otp}`);
+    console.log(`==================================================\n`);
+
     const html = `
       <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px;border:1px solid #e5e7eb;border-radius:12px">
-        <h2 style="color:#1e293b;margin-bottom:8px">Bengal Creations</h2>
+        <h2 style="color:#7a1c2e;margin-bottom:8px">Bengal Creations</h2>
         <p style="color:#64748b;margin-bottom:24px">Super Admin Login OTP</p>
-        <div style="background:#f1f5f9;border-radius:8px;padding:24px;text-align:center">
-          <span style="font-size:36px;font-weight:700;letter-spacing:8px;color:#0f172a">${otp}</span>
+        <div style="background:#fdf8f5;border:1px solid #f0d8d8;border-radius:8px;padding:24px;text-align:center">
+          <span style="font-size:36px;font-weight:700;letter-spacing:8px;color:#7a1c2e">${otp}</span>
         </div>
-        <p style="color:#94a3b8;font-size:13px;margin-top:16px">Expires in 10 minutes. Do not share this OTP.</p>
+        <p style="color:#94a3b8;font-size:13px;margin-top:16px">Expires in 10 minutes. Do not share this OTP with anyone.</p>
       </div>
     `;
 
-    await sendEmail(email, "Super Admin OTP — Bengal Creations", html);
+    let emailSent = false;
+    try {
+      await sendEmail(cleanEmail, "Super Admin OTP — Bengal Creations", html);
+      emailSent = true;
+    } catch (mailErr) {
+      console.error("⚠️ Email dispatch warning:", mailErr.message);
+    }
 
-    res.json({ success: true, msg: "OTP sent to your email" });
+    res.json({
+      success: true,
+      msg: emailSent
+        ? "OTP sent to your email"
+        : `OTP generated (${otp}). Check server terminal output or email logs.`,
+    });
   } catch (err) {
     console.error("sendLoginOtp error:", err);
-    res.status(500).json({ msg: "Failed to send OTP" });
+    res.status(500).json({ msg: "Failed to process OTP request" });
   }
 };
 

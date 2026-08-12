@@ -13,17 +13,19 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = async (to, subject, htmlContent) => {
     const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: `Bengal Creations <${process.env.EMAIL_USER}>`,
         to,
         subject,
         html: htmlContent,
     };
 
     try {
-        await transporter.sendMail(mailOptions);
-        console.log("Email sent successfully");
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`✅ Email sent successfully to ${to} (Message ID: ${info.messageId})`);
+        return info;
     } catch (error) {
-        console.error("Error sending email:", error);
+        console.error(`❌ Error sending email to ${to}:`, error.message);
+        throw error;
     }
 };
 
