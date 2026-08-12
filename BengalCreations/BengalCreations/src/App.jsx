@@ -40,6 +40,14 @@ import DeliveryPolicy from "./pages/DeliveryPolicy";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
 
+// Helper wrapper to redirect logged-in vendors away from customer storefront pages
+function NonVendorRoute({ children, currentUser }) {
+  if (currentUser?.role === "vendor") {
+    return <Navigate to="/vendor" replace />;
+  }
+  return children;
+}
+
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -151,39 +159,47 @@ export default function App() {
       <Toast message={toast.msg} visible={toast.visible} />
 
       <Routes>
-        {/* Public */}
+        {/* Public / Customer Storefront Routes */}
         <Route path="/" element={
-          <HomePage
-            setFilterCategory={setFilterCategory}
-            cart={cart} wishlist={wishlist}
-            onAddCart={addToCart} onToggleWish={toggleWishlist}
-            categoryTiles={CATEGORY_TILES} allProducts={allProducts} loading={loading}
-          />
+          <NonVendorRoute currentUser={currentUser}>
+            <HomePage
+              setFilterCategory={setFilterCategory}
+              cart={cart} wishlist={wishlist}
+              onAddCart={addToCart} onToggleWish={toggleWishlist}
+              categoryTiles={CATEGORY_TILES} allProducts={allProducts} loading={loading}
+            />
+          </NonVendorRoute>
         } />
         <Route path="/shop" element={
-          <ShopPage
-            cart={cart} wishlist={wishlist}
-            onAddCart={addToCart} onToggleWish={toggleWishlist}
-            WB_DISTRICTS={WB_DISTRICTS}
-          />
+          <NonVendorRoute currentUser={currentUser}>
+            <ShopPage
+              cart={cart} wishlist={wishlist}
+              onAddCart={addToCart} onToggleWish={toggleWishlist}
+              WB_DISTRICTS={WB_DISTRICTS}
+            />
+          </NonVendorRoute>
         } />
         <Route path="/product/:id" element={
-          <ProductDetailPage
-            cart={cart} wishlist={wishlist}
-            onAddCart={addToCart} onToggleWish={toggleWishlist}
-            openCart={() => setCartOpen(true)}
-            setFilterCategory={setFilterCategory}
-            allProducts={allProducts}
-          />
+          <NonVendorRoute currentUser={currentUser}>
+            <ProductDetailPage
+              cart={cart} wishlist={wishlist}
+              onAddCart={addToCart} onToggleWish={toggleWishlist}
+              openCart={() => setCartOpen(true)}
+              setFilterCategory={setFilterCategory}
+              allProducts={allProducts}
+            />
+          </NonVendorRoute>
         } />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/delivery-policy" element={<DeliveryPolicy />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/refund-policy" element={<RefundPolicy />} />
-        <Route path="/contact" element={<ContactPage onShowToast={showToast} />} />
-        <Route path="/login" element={<LoginPage onLogin={handleLogin} showToast={showToast} />} />
+        <Route path="/about" element={<NonVendorRoute currentUser={currentUser}><AboutPage /></NonVendorRoute>} />
+        <Route path="/delivery-policy" element={<NonVendorRoute currentUser={currentUser}><DeliveryPolicy /></NonVendorRoute>} />
+        <Route path="/privacy-policy" element={<NonVendorRoute currentUser={currentUser}><PrivacyPolicy /></NonVendorRoute>} />
+        <Route path="/refund-policy" element={<NonVendorRoute currentUser={currentUser}><RefundPolicy /></NonVendorRoute>} />
+        <Route path="/contact" element={<NonVendorRoute currentUser={currentUser}><ContactPage onShowToast={showToast} /></NonVendorRoute>} />
+        <Route path="/login" element={
+          currentUser?.role === "vendor" ? <Navigate to="/vendor" replace /> : <LoginPage onLogin={handleLogin} showToast={showToast} />
+        } />
         <Route path="/reset-password/:customerId/:token" element={<ResetPasswordPage showToast={showToast} />} />
-        <Route path="/vendor" element={
+        <Route path="/vendor/*" element={
           <VendorPage currentUser={currentUser} onShowToast={showToast} catOptions={catOptions} WB_DISTRICTS={WB_DISTRICTS} doLogout={doLogout} />
         } />
         {/* Customer-only */}
@@ -224,7 +240,7 @@ export default function App() {
         } />
 
         <Route path="/super-admin" element={<SuperAdminPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to={currentUser?.role === "vendor" ? "/vendor" : "/"} replace />} />
       </Routes>
 
       {!isLoginPage && !isResetPage && !isSuperAdmin && !isVendorPage && !isDashboard && <Footer navigate={navigate} />}

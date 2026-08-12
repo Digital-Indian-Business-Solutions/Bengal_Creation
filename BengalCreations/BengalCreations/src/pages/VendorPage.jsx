@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { uploadImage } from "../utils/cloudinary";
 import { fetchPlatformSettings } from "../api/api";
 import {
@@ -74,9 +74,22 @@ function StatusBadge({ status }) {
    ═══════════════════════════════════════════════════════ */
 function VendorPage({ currentUser, onShowToast, WB_DISTRICTS, doLogout }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  /* ─── State ─────────────────────────────────────────── */
-  const [activeTab, setActiveTab]     = useState("dashboard");
+  /* ─── Derive active tab from URL path ───────────────── */
+  const getTabFromPath = useCallback((pathname) => {
+    const p = (pathname || "").toLowerCase();
+    if (p.includes("/vendor/products") || p.includes("/vendor/myproducts")) return "myproducts";
+    if (p.includes("/vendor/addproduct") || p.includes("/vendor/add-product")) return "addproduct";
+    if (p.includes("/vendor/orders")) return "orders";
+    if (p.includes("/vendor/reports")) return "reports";
+    if (p.includes("/vendor/refunds")) return "refunds";
+    if (p.includes("/vendor/messages")) return "messages";
+    if (p.includes("/vendor/settings")) return "settings";
+    return "dashboard";
+  }, []);
+
+  const activeTab = getTabFromPath(location.pathname);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [dashProducts, setDashProducts] = useState([]);
@@ -166,7 +179,13 @@ function VendorPage({ currentUser, onShowToast, WB_DISTRICTS, doLogout }) {
   }, [rawOrders]);
 
   /* ─── Helpers ───────────────────────────────────────── */
-  const navTo = (tab) => { setActiveTab(tab); setSidebarOpen(false); };
+  const navTo = (tab) => {
+    setSidebarOpen(false);
+    let pathSlug = tab;
+    if (tab === "myproducts") pathSlug = "products";
+    if (tab === "dashboard") pathSlug = "";
+    navigate(pathSlug ? `/vendor/${pathSlug}` : "/vendor");
+  };
 
   const handleBulletChange = (idx, val) => {
     setBulletPoints((prev) => {

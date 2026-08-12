@@ -13,7 +13,15 @@ export default function ProtectedRoute({ children, role }) {
   const { currentUser } = useAuth();
 
   if (!currentUser) return <Navigate to="/login" replace />;
-  if (role && currentUser.role !== role) return <Navigate to="/" replace />;
+
+  // Vendors should never access customer/user routes — redirect to vendor panel
+  if (currentUser.role === "vendor" && role !== "vendor") {
+    return <Navigate to="/vendor" replace />;
+  }
+
+  if (role && currentUser.role !== role) {
+    return <Navigate to={currentUser.role === "vendor" ? "/vendor" : "/"} replace />;
+  }
 
   return children;
 }
