@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
+  ArrowLeft,
   ClipboardList,
   CreditCard,
   Package,
@@ -16,6 +17,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   RefreshCw,
   ShoppingBag,
   AlertCircle,
@@ -23,6 +25,14 @@ import {
   XCircle,
 } from "lucide-react";
 import { fetchUserOrders, requestRefund } from "../api/api";
+
+const STATUS_BADGES = {
+  Pending:    { bg: "#fff7ed", color: "#c2410c", border: "#ffedd5", label: "Pending" },
+  Processing: { bg: "#f0f9ff", color: "#0369a1", border: "#e0f2fe", label: "Processing" },
+  Shipped:    { bg: "#f5f3ff", color: "#6d28d9", border: "#ede9fe", label: "Shipped" },
+  Delivered:  { bg: "#f0fdf4", color: "#15803d", border: "#dcfce7", label: "Delivered" },
+  Cancelled:  { bg: "#fef2f2", color: "#b91c1c", border: "#fee2e2", label: "Cancelled" },
+};
 
 const REFUND_BADGE = {
   Requested: { bg: "#fff3cd", color: "#856404", label: "Refund Requested" },
@@ -34,11 +44,14 @@ const REFUND_BADGE = {
 export default function OrdersPage({ userId }) {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
-  const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [error, setError] = useState("");
-  
-  // Accordion details toggle
+
+  // Navigation mode: "list" (shows list of all orders) or "detail" (shows selected order details)
+  const [viewMode, setViewMode] = useState("list"); // "list" | "detail"
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+
+  // Accordion details toggle in detail view
   const [showAllItems, setShowAllItems] = useState(false);
 
   // Refund Modal
@@ -54,10 +67,7 @@ export default function OrdersPage({ userId }) {
     setLoadingOrders(true);
     fetchUserOrders(userId)
       .then((data) => {
-        setOrders(data);
-        if (data && data.length > 0) {
-          setSelectedOrderId(data[0]._id);
-        }
+        setOrders(data || []);
         setLoadingOrders(false);
       })
       .catch((err) => {
@@ -90,6 +100,19 @@ export default function OrdersPage({ userId }) {
     } finally {
       setRefundLoading(false);
     }
+  };
+
+  const openOrderDetails = (orderId) => {
+    setSelectedOrderId(orderId);
+    setViewMode("detail");
+    setShowAllItems(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const backToList = () => {
+    setViewMode("list");
+    setSelectedOrderId(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const formatShortId = (id) => {
@@ -125,14 +148,21 @@ export default function OrdersPage({ userId }) {
     };
   };
 
-
+  const getActiveStepIndex = (status, paymentStatus) => {
+    if (status === "Cancelled") return -1;
+    if (status === "Delivered") return 4;
+    if (status === "Shipped") return 3;
+    if (status === "Processing") return 2;
+    if (paymentStatus === "Paid" || status === "Confirmed") return 1;
+    return 0; // Order Placed
+  };
 
   if (loadingOrders) {
     return (
       <div className="od-page-bg">
         <div style={{ textAlign: "center", padding: "100px 20px", color: "var(--text-muted)" }}>
           <Clock className="spin" size={48} style={{ color: "var(--maroon)", marginBottom: 16 }} />
-          <p style={{ fontSize: 16, fontWeight: 500 }}>Loading your order tracking details...</p>
+          <p style={{ fontSize: 16, fontWeight: 500 }}>Loading your orders...</p>
         </div>
       </div>
     );
@@ -165,25 +195,177 @@ export default function OrdersPage({ userId }) {
     );
   }
 
-  // Current active selected order
-  const order = orders.find((o) => o._id === selectedOrderId) || orders[0];
+  // Selected Order for Detail View
+  const selectedOrder = orders.find((o) => o._id === selectedOrderId) || orders[0];
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // 1. ORDERS LIST VIEW (Shows all orders one by one)
+  // ════════════════════════════════════════════════════════════════════════════
+  if (viewMode === "list") {
+    return (
+      <div className="od-page-bg">
+        <div className="od-container">
+          
+          {/* Breadcrumbs */}
+          <div className="od-breadcrumbs">
+            <Link to="/" style={{ color: "inherit", textDecoration: "none" }}>Home</Link>
+            <span>&gt;</span>
+            <span className="active">My Orders</span>
+          </div>
+
+          {/* Page Top Header */}
+          <div className="od-header-bar">
+            <div className="od-title-area">
+              <h1>My Orders ({orders.length})</h1>
+              <div className="od-placed-date">
+                Click on any order to view tracking timeline & full order details
+              </div>
+            </div>
+
+            {/* Need Help Box */}
+            <div className="od-need-help-card">
+              <div className="od-need-help-icon">
+                <Headphones size={20} />
+              </div>
+              <div className="od-need-help-text">
+                <label>Need Help?</label>
+                <p>Contact us &nbsp;|&nbsp; <a href="tel:+919876543210">+91 98765 43210</a></p>
+              </div>
+            </div>
+          </div>
+
+          {/* List of Order Cards */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            {orders.map((o) => {
+              const stBadge = STATUS_BADGES[o.status] || STATUS_BADGES.Pending;
+
+              return (
+                <div
+                  key={o._id}
+                  onClick={() => openOrderDetails(o._id)}
+                  style={{
+                    background: "#ffffff",
+                    borderRadius: 16,
+                    border: "1px solid #eae5dc",
+                    padding: "24px",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.03)",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  className="od-order-list-card"
+                >
+                  {/* Order Header Row */}
+                  <div style={{
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    paddingBottom: 16, borderBottom: "1px solid #f3eeea", flexWrap: "wrap", gap: 12
+                  }}>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: "var(--maroon-dark)", margin: 0 }}>
+                          Order #{formatShortId(o._id)}
+                        </h3>
+                        <span style={{
+                          fontSize: 12, padding: "3px 10px", borderRadius: 12, fontWeight: 700,
+                          background: stBadge.bg, color: stBadge.color, border: `1px solid ${stBadge.border}`
+                        }}>
+                          {stBadge.label}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 12.5, color: "#666", marginTop: 4, display: "flex", alignItems: "center", gap: 6 }}>
+                        <Calendar size={13} style={{ color: "var(--maroon)" }} />
+                        Placed on {formatDate(o.createdAt)}
+                      </div>
+                    </div>
+
+                    <div style={{ textAlign: "right", display: "flex", alignItems: "center", gap: 16 }}>
+                      <div>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: "var(--maroon-dark)" }}>
+                          ₹{o.totalAmount?.toLocaleString()}
+                        </div>
+                        <div style={{ fontSize: 11.5, color: "#777" }}>
+                          Payment: {o.paymentMethod || "COD"} ({o.paymentStatus || "Paid"})
+                        </div>
+                      </div>
+                      <div style={{
+                        width: 34, height: 34, borderRadius: "50%", background: "#fbf5f6", color: "var(--maroon)",
+                        display: "flex", alignItems: "center", justifyContent: "center"
+                      }}>
+                        <ChevronRight size={18} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Order Items Preview */}
+                  <div style={{ paddingTop: 16 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "var(--maroon-dark)", marginBottom: 12, letterSpacing: 0.5 }}>
+                      ORDER ITEMS ({o.items?.length || 0})
+                    </div>
+
+                    <div className="od-items-list">
+                      {o.items?.slice(0, 3).map((item, idx) => {
+                        const prod = item.product || {};
+                        const imgUrl = prod.images?.[0] || prod.thumb || "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=200&q=80";
+                        const sizeText = item.variant || (prod.variants?.[0]?.size ? `Size: ${prod.variants[0].size}` : null);
+
+                        return (
+                          <div key={idx} className="od-item-row" style={{ padding: "10px 0" }}>
+                            <img src={imgUrl} alt={prod.name || "Product"} className="od-item-img" style={{ width: 60, height: 60 }} />
+                            <div className="od-item-info">
+                              <h4 style={{ fontSize: 14 }}>{prod.name || "Handcrafted Product"}</h4>
+                              <div className="od-item-specs">
+                                {sizeText && <span>{sizeText}</span>}
+                                {sizeText && item.color ? " | " : ""}
+                                {item.color && <span>Color: {item.color}</span>}
+                                {!sizeText && !item.color && <span style={{ color: "#888" }}>Artisanal Handcraft</span>}
+                              </div>
+                            </div>
+                            <div className="od-item-price">₹{item.price?.toLocaleString()}</div>
+                            <div className="od-item-qty">Qty: {item.quantity}</div>
+                            <div className="od-item-total">₹{((item.price || 0) * item.quantity).toLocaleString()}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {o.items?.length > 3 && (
+                      <div style={{ fontSize: 12, color: "#888", marginTop: 8 }}>
+                        + {o.items.length - 3} more items in this order
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Card Footer Action */}
+                  <div style={{
+                    marginTop: 16, paddingTop: 12, borderTop: "1px dashed #f0eae1",
+                    display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13
+                  }}>
+                    <span style={{ color: "#666" }}>
+                      📍 Deliver to: <strong>{o.address?.fullName || "Customer"}</strong> ({o.address?.city || "Kolkata"})
+                    </span>
+                    <span style={{ color: "var(--maroon)", fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                      Track Order & Details <ChevronRight size={16} />
+                    </span>
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // 2. ORDER DETAIL VIEW (Shows full tracking & details for selected order)
+  // ════════════════════════════════════════════════════════════════════════════
+  const order = selectedOrder;
   const dates = getStepDates(order.createdAt);
-
-  // Determine current active milestone index (0 to 4)
-  const getActiveStepIndex = (status, paymentStatus) => {
-    if (status === "Cancelled") return -1;
-    if (status === "Delivered") return 4;
-    if (status === "Shipped") return 3;
-    if (status === "Processing") return 2;
-    if (paymentStatus === "Paid" || status === "Confirmed") return 1;
-    return 0; // Order Placed
-  };
-
   const activeStepIdx = getActiveStepIndex(order.status, order.paymentStatus);
   const canRefund = order.paymentStatus === "Paid" && (!order.refundStatus || order.refundStatus === "None") && order.status !== "Cancelled";
   const refundBadge = order.refundStatus && order.refundStatus !== "None" ? REFUND_BADGE[order.refundStatus] : null;
 
-  // 5 Step Milestones definition matching exact design
   const stepperSteps = [
     { title: "Order Placed", date: dates.placed, icon: ClipboardList },
     { title: "Payment Confirmed", date: dates.paid, icon: CreditCard },
@@ -196,16 +378,30 @@ export default function OrdersPage({ userId }) {
     <div className="od-page-bg">
       <div className="od-container">
         
-        {/* Breadcrumb Bar */}
-        <div className="od-breadcrumbs">
-          <Link to="/" style={{ color: "inherit", textDecoration: "none" }}>Home</Link>
-          <span>&gt;</span>
-          <span style={{ color: "#777" }}>My Orders</span>
-          <span>&gt;</span>
-          <span className="active">Order #{formatShortId(order._id)}</span>
+        {/* Back Button & Breadcrumb Bar */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <button
+            onClick={backToList}
+            style={{
+              background: "white", border: "1px solid #eae5dc", padding: "6px 14px",
+              borderRadius: 8, fontSize: 13, fontWeight: 600, color: "var(--maroon)",
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+              boxShadow: "0 2px 6px rgba(0,0,0,0.03)"
+            }}
+          >
+            <ArrowLeft size={16} /> Back to All Orders
+          </button>
+
+          <div className="od-breadcrumbs" style={{ margin: 0 }}>
+            <Link to="/" style={{ color: "inherit", textDecoration: "none" }}>Home</Link>
+            <span>&gt;</span>
+            <span style={{ cursor: "pointer" }} onClick={backToList}>My Orders</span>
+            <span>&gt;</span>
+            <span className="active">Order #{formatShortId(order._id)}</span>
+          </div>
         </div>
 
-        {/* Header Bar */}
+        {/* Detail Header Bar */}
         <div className="od-header-bar">
           <div className="od-title-area">
             <h1>Order #{formatShortId(order._id)}</h1>
@@ -226,23 +422,6 @@ export default function OrdersPage({ userId }) {
             </div>
           </div>
         </div>
-
-        {/* Multi-Order Selector Pills (if user has > 1 orders) */}
-        {orders.length > 1 && (
-          <div className="od-selector-bar">
-            <span className="od-selector-label">Your Orders:</span>
-            {orders.map((o) => (
-              <button
-                key={o._id}
-                onClick={() => { setSelectedOrderId(o._id); setShowAllItems(false); }}
-                className={`od-selector-pill ${o._id === order._id ? "active" : ""}`}
-              >
-                <span>#{formatShortId(o._id)}</span>
-                <small>({new Date(o.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })})</small>
-              </button>
-            ))}
-          </div>
-        )}
 
         {/* Main Two-Column Layout */}
         <div className="od-main-grid">
@@ -320,7 +499,7 @@ export default function OrdersPage({ userId }) {
               </div>
 
               <div className="od-items-list">
-                {(showAllItems ? order.items : order.items.slice(0, 4)).map((item, idx) => {
+                {(showAllItems ? order.items : order.items?.slice(0, 4)).map((item, idx) => {
                   const prod = item.product || {};
                   const imgUrl = prod.images?.[0] || prod.thumb || "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=200&q=80";
                   const sizeText = item.variant || (prod.variants?.[0]?.size ? `Size: ${prod.variants[0].size}` : null);
@@ -346,7 +525,7 @@ export default function OrdersPage({ userId }) {
               </div>
 
               {/* View More / Less Toggle */}
-              {order.items.length > 4 && (
+              {order.items?.length > 4 && (
                 <button className="od-toggle-btn" onClick={() => setShowAllItems(!showAllItems)}>
                   {showAllItems ? (
                     <>Show Less Items <ChevronUp size={16} /></>
@@ -429,7 +608,7 @@ export default function OrdersPage({ userId }) {
                     </td>
                   </tr>
 
-                  {/* ── Amount Breakdown ────────────────────────────── */}
+                  {/* Amount Breakdown */}
                   <tr style={{ borderTop: "1px dashed #e0d8cc" }}>
                     <td style={{ paddingTop: 10 }}>Subtotal</td>
                     <td className="value" style={{ paddingTop: 10 }}>
@@ -477,18 +656,15 @@ export default function OrdersPage({ userId }) {
 
               <div className="od-summary-divider"></div>
 
-              <div className="od-total-row">
+              <div className="od-total-row" style={{ marginBottom: 0 }}>
                 <span className="od-total-label">Total Amount</span>
                 <span className="od-total-amount">₹{order.totalAmount?.toLocaleString()}</span>
               </div>
-
-
             </div>
 
             {/* Sidebar Card 3: Trust & Service Badges */}
             <div className="od-card">
               <div className="od-trust-list">
-                
                 <div className="od-trust-item">
                   <div className="od-trust-icon">
                     <PackageCheck size={20} />
@@ -518,7 +694,6 @@ export default function OrdersPage({ userId }) {
                     <p>Quality products from Bengal Creations</p>
                   </div>
                 </div>
-
               </div>
             </div>
 
@@ -548,7 +723,7 @@ export default function OrdersPage({ userId }) {
               placeholder="e.g. Received damaged item, product not as expected..."
               value={refundReason}
               onChange={(e) => setRefundReason(e.target.value)}
-              style={{ marginBottom: 16, width: "100%", padding: 10, borderRadius: 8, border: "1px solid #ccc" }}
+              style={{ marginBottom: 16, width: "100%", padding: 10, borderRadius: 8, border: "1.5px solid #ccc" }}
             />
             <div style={{ display: "flex", gap: 10 }}>
               <button

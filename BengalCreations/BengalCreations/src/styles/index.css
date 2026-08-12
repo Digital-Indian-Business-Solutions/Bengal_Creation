@@ -5583,4 +5583,10 @@ footer {
   font-size: 12px;
   color: #777;
   margin: 0;
+}
+
+.od-order-list-card:hover {
+  border-color: var(--maroon) !important;
+  box-shadow: 0 8px 28px rgba(122, 28, 46, 0.08) !important;
+  transform: translateY(-2px);
 }

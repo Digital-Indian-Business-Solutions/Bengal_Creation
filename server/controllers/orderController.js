@@ -45,26 +45,26 @@ const createOrder = async (req, res) => {
 
   const settings = await getSettings();
 
-  const subtotal       = cart.totalAmount;
+  const subtotal       = Number(cart.totalAmount) || 0;
   const discountAmount = Math.min(Number(clientDiscount) || 0, subtotal);
 
   // GST on (subtotal - discount)
   const taxBase       = subtotal - discountAmount;
   const gstAmount     = settings.gstEnabled
-    ? Math.round(taxBase * settings.gstRate / 100) : 0;
+    ? Math.round(taxBase * Number(settings.gstRate || 0) / 100) : 0;
 
-  // Platform fee on subtotal (before discount — seller pays full commission)
+  // Platform fee (flat charge per order, e.g. ₹10 or ₹20)
   const platformFeeAmount = settings.platformFeeEnabled
-    ? Math.round(subtotal * settings.platformFeeRate ) : 0;
+    ? Number(settings.platformFeeRate || 0) : 0;
 
   // Delivery charge
   let deliveryCharge = 0;
-  if (settings.deliveryChargeEnabled && settings.deliveryCharge > 0) {
-    const freeThreshold = settings.freeDeliveryAbove || 0;
-    deliveryCharge = (freeThreshold > 0 && subtotal >= freeThreshold) ? 0 : settings.deliveryCharge;
+  if (settings.deliveryChargeEnabled && Number(settings.deliveryCharge) > 0) {
+    const freeThreshold = Number(settings.freeDeliveryAbove) || 0;
+    deliveryCharge = (freeThreshold > 0 && subtotal >= freeThreshold) ? 0 : Number(settings.deliveryCharge);
   }
 
-  const totalAmount = taxBase + gstAmount + platformFeeAmount + deliveryCharge;
+  const totalAmount = Number(taxBase) + Number(gstAmount) + Number(platformFeeAmount) + Number(deliveryCharge);
 
   const orderItems = cart.items.map((item) => ({
     product:  item.product,
@@ -79,9 +79,9 @@ const createOrder = async (req, res) => {
     items:    orderItems,
     address:  addressId,
     subtotal,
-    gstRate:          settings.gstEnabled ? settings.gstRate : 0,
+    gstRate:          settings.gstEnabled ? Number(settings.gstRate || 0) : 0,
     gstAmount,
-    platformFeeRate:  settings.platformFeeEnabled ? settings.platformFeeRate : 0,
+    platformFeeRate:  settings.platformFeeEnabled ? Number(settings.platformFeeRate || 0) : 0,
     platformFeeAmount,
     deliveryCharge,
     discountAmount,
@@ -101,29 +101,31 @@ const getChargePreview = async (req, res) => {
   try {
     const { subtotal = 0, discountAmount = 0 } = req.query;
     const settings = await getSettings();
-    const sub  = Number(subtotal);
-    const disc = Math.min(Number(discountAmount), sub);
+    const sub  = Number(subtotal) || 0;
+    const disc = Math.min(Number(discountAmount) || 0, sub);
     const taxBase = sub - disc;
 
-    const gstAmount         = settings.gstEnabled ? Math.round(taxBase * settings.gstRate / 100) : 0;
-    const platformFeeAmount = settings.platformFeeEnabled ? Math.round(sub * settings.platformFeeRate / 100) : 0;
+    const gstAmount         = settings.gstEnabled ? Math.round(taxBase * Number(settings.gstRate || 0) / 100) : 0;
+    const platformFeeAmount = settings.platformFeeEnabled ? Number(settings.platformFeeRate || 0) : 0;
 
     let deliveryCharge = 0;
-    if (settings.deliveryChargeEnabled && settings.deliveryCharge > 0) {
-      const freeThreshold = settings.freeDeliveryAbove || 0;
-      deliveryCharge = (freeThreshold > 0 && sub >= freeThreshold) ? 0 : settings.deliveryCharge;
+    if (settings.deliveryChargeEnabled && Number(settings.deliveryCharge) > 0) {
+      const freeThreshold = Number(settings.freeDeliveryAbove) || 0;
+      deliveryCharge = (freeThreshold > 0 && sub >= freeThreshold) ? 0 : Number(settings.deliveryCharge);
     }
+
+    const total = Number(taxBase) + Number(gstAmount) + Number(platformFeeAmount) + Number(deliveryCharge);
 
     res.json({
       subtotal:           sub,
       discountAmount:     disc,
-      gstRate:            settings.gstEnabled ? settings.gstRate : 0,
+      gstRate:            settings.gstEnabled ? Number(settings.gstRate || 0) : 0,
       gstAmount,
       platformFeeLabel:   settings.platformFeeLabel || "Platform Fee",
-      platformFeeRate:    settings.platformFeeEnabled ? settings.platformFeeRate : 0,
+      platformFeeRate:    settings.platformFeeEnabled ? Number(settings.platformFeeRate || 0) : 0,
       platformFeeAmount,
       deliveryCharge,
-      total:              taxBase + gstAmount + platformFeeAmount + deliveryCharge,
+      total,
     });
   } catch (err) {
     res.status(500).json({ msg: err.message });

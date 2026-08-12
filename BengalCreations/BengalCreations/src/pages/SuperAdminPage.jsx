@@ -177,14 +177,14 @@ function SettingsTab({ token, showToast }) {
 
         {/* Platform Fee */}
         <div style={settingCard}>
-          <div style={settingCardHead}>🏦 Platform Fee / Commission</div>
+          <div style={settingCardHead}>🏦 Platform Fee / Flat Charge</div>
           {field("platformFeeEnabled","Enable Platform Fee","checkbox")}
           {s.platformFeeEnabled && (<>
             {field("platformFeeLabel","Fee Label","text","e.g. 'Platform Fee', 'Service Charge'")}
-            {field("platformFeeRate","Fee Rate (%)","number","Applied on full subtotal")}
+            {field("platformFeeRate","Flat Platform Fee (₹)","number","Flat charge per order (e.g. 10 or 20)")}
           </>)}
           <div style={previewBox}>
-            Example: ₹1,000 order → Fee = ₹{s.platformFeeEnabled ? Math.round(1000*s.platformFeeRate/100) : 0}
+            Example: Order → Flat Platform Fee = ₹{s.platformFeeEnabled ? (s.platformFeeRate || 0) : 0}
           </div>
         </div>
 
@@ -222,14 +222,14 @@ function SettingsTab({ token, showToast }) {
           const sub = 1000, disc = Math.min(100, 1000);
           const taxBase = sub - disc;
           const gst = s.gstEnabled ? Math.round(taxBase * s.gstRate / 100) : 0;
-          const fee = s.platformFeeEnabled ? Math.round(sub * s.platformFeeRate / 100) : 0;
+          const fee = s.platformFeeEnabled ? Number(s.platformFeeRate || 0) : 0;
           const del = s.deliveryChargeEnabled && s.deliveryCharge > 0 && !(s.freeDeliveryAbove > 0 && sub >= s.freeDeliveryAbove) ? s.deliveryCharge : 0;
           const total = taxBase + gst + fee + del;
           const rows = [
             ["Subtotal",           `₹${sub.toLocaleString()}`],
             ["Coupon Discount",    `−₹${disc.toLocaleString()}`, "#16a34a"],
             s.gstEnabled && [`GST (${s.gstRate}%)`, `₹${gst.toLocaleString()}`],
-            s.platformFeeEnabled && [`${s.platformFeeLabel} (${s.platformFeeRate}%)`, `₹${fee.toLocaleString()}`],
+            s.platformFeeEnabled && [`${s.platformFeeLabel || "Platform Fee"}`, `₹${fee.toLocaleString()}`],
             s.deliveryChargeEnabled && ["Delivery", del > 0 ? `₹${del}` : "FREE"],
             ["Total", `₹${total.toLocaleString()}`, "#800000"],
           ].filter(Boolean);
