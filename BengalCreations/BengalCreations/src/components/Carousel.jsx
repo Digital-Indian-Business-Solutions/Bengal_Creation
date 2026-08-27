@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { cloudinaryResize } from "../utils/helpers";
 
-const CARD_WIDTH = 136; // px per card
+const CARD_WIDTH = 180; // px per card
 const CARD_GAP = 6;
 const AUTO_MS = 3500; // auto-advance interval
 
@@ -157,12 +157,29 @@ function Carousel({
                     >
                       <div
                         className="carousel-card-img"
+                        style={{
+                          position: "relative",
+                          width: "100%",
+                          height: 220,
+                          overflow: "hidden",
+                          background: "#f8f4ef",
+                          flexShrink: 0,
+                          borderRadius: "14px 14px 0 0",
+                        }}
                       >
                         {rawImg ? (
                           <img
                             src={rawImg}
                             alt={p.name}
                             loading="lazy"
+                            style={{
+                              position: "absolute",
+                              inset: 0,
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              objectPosition: "top center",
+                            }}
                             onError={(e) => {
                               e.target.style.display = "none";
                               if (e.target.nextSibling) {
@@ -174,12 +191,12 @@ function Carousel({
                         <div
                           style={{
                             display: rawImg ? "none" : "flex",
-                            height: "100%",
-                            width: "100%",
+                            position: "absolute",
+                            inset: 0,
                             alignItems: "center",
                             justifyContent: "center",
                             fontSize: 52,
-                            background: "var(--cream2)",
+                            background: "#f8f4ef",
                           }}
                         >
                           {p.emoji}
