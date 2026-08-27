@@ -157,19 +157,12 @@ function Carousel({
                     >
                       <div
                         className="carousel-card-img"
-                        style={{ height: 160 }}
                       >
                         {rawImg ? (
                           <img
                             src={rawImg}
                             alt={p.name}
                             loading="lazy"
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              display: "block",
-                            }}
                             onError={(e) => {
                               e.target.style.display = "none";
                               if (e.target.nextSibling) {

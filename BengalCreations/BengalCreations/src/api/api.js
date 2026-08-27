@@ -94,9 +94,10 @@ export const fetchSearchSuggestions = async (query = "") => {
   return res.json();
 };
 
-// Backwards compat — used by HomePage carousel initial load (first page only)
+// Backwards compat — used by HomePage carousel initial load
+// Fetches a larger set so Trending Products shows diverse product types
 export const fetchAllProducts = async () => {
-  const { products } = await fetchProductsPage({ page: 1, limit: 10 });
+  const { products } = await fetchProductsPage({ page: 1, limit: 50 });
   return products;
 };
 

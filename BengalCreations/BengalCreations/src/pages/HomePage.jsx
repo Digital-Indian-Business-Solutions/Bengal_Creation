@@ -1,9 +1,19 @@
 import { useNavigate } from "react-router-dom";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import Carousel from "../components/Carousel";
 import PopupBanner from "../components/PopupBanner";
-import { fetchProductsPageByCategory } from "../api/api";
-import Banner from "./Banner"; 
+import { fetchProductsPageByCategory, fetchProductsPage } from "../api/api";
+import Banner from "./Banner";
+
+// Fisher-Yates shuffle — returns a new shuffled array
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 // Categories
 const CATEGORY_CAROUSELS = [
@@ -26,6 +36,47 @@ function HomePage({
   loading,
 }) {
   const navigate = useNavigate();
+
+  // Shuffled products for Trending (diverse mix across categories)
+  const trendingProducts = useMemo(
+    () => (loading ? [] : shuffleArray(allProducts)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allProducts.length, loading]
+  );
+
+  // ── All-vendor products for Best Sellers ──────────────────────────────────
+  const [allVendorProducts, setAllVendorProducts] = useState([]);
+  const [bestSellersLoading, setBestSellersLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch a large page to cover all vendors' products
+    fetchProductsPage({ page: 1, limit: 500 })
+      .then(({ products }) => {
+        setAllVendorProducts(products);
+        setBestSellersLoading(false);
+      })
+      .catch(() => setBestSellersLoading(false));
+  }, []);
+
+  // One best product per vendor — shows a featured product from every vendor
+  const bestSellers = useMemo(() => {
+    if (!allVendorProducts.length) return [];
+    // Sort by rating descending so each vendor's best product rises to top
+    const sorted = [...allVendorProducts].sort(
+      (a, b) => (b.rating || 0) - (a.rating || 0)
+    );
+    // Keep only 1 product per unique vendor
+    const seenVendors = new Set();
+    const onePerVendor = [];
+    for (const product of sorted) {
+      const vendorKey = product.vendorId || product.vendor || "unknown";
+      if (!seenVendors.has(vendorKey)) {
+        seenVendors.add(vendorKey);
+        onePerVendor.push(product);
+      }
+    }
+    return onePerVendor;
+  }, [allVendorProducts]);
 
   // State for category products
   const [categoryProducts, setCategoryProducts] = useState(() =>
@@ -89,21 +140,21 @@ function HomePage({
         </div>
       </div>
 
-      {/* ✅ Trending Products */}
+      {/* ✅ Trending Products — shuffled for variety */}
       <Carousel
         title="Trending Products"
-        products={allProducts}
+        products={trendingProducts}
         onShowProduct={(id) => navigate(`/product/${id}`)}
         loading={loading}
         visibleCount={10}
       />
 
-      {/* ✅ Best Sellers */}
+      {/* ✅ Best Sellers — one featured product per vendor */}
       <Carousel
         title="Best Sellers"
-        products={[...allProducts].reverse()}
+        products={bestSellers}
         onShowProduct={(id) => navigate(`/product/${id}`)}
-        loading={loading}
+        loading={bestSellersLoading}
         visibleCount={10}
       />
 

@@ -515,9 +515,12 @@ function ProductDetailPage({
                       >
                         <div
                           style={{
-                            height: 100,
+                            height: 220,
                             overflow: "hidden",
-                            background: "var(--cream2)",
+                            background: "#f8f4ef",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
                           {op.thumb ? (
@@ -527,7 +530,8 @@ function ProductDetailPage({
                               style={{
                                 width: "100%",
                                 height: "100%",
-                                objectFit: "cover",
+                                objectFit: "contain",
+                                objectPosition: "center",
                               }}
                               loading="lazy"
                             />
