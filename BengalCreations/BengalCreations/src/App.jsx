@@ -74,7 +74,8 @@ export default function App() {
         // Small delay so splash animates out smoothly
         setTimeout(() => setAppReady(true), 600);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("Failed to load initial products:", err);
         setLoading(false);
         setAppReady(true);
       });

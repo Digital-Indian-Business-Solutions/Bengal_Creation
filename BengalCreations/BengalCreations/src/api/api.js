@@ -1,6 +1,25 @@
 // ─── Base URL ─────────────────────────────────────────────────────────────────
 export const API = import.meta.env.VITE_API || "http://localhost:5000/api";
 
+// Retry helper for transient cold-start / network failures on read requests
+const fetchWithRetry = async (url, options = {}, retries = 2, delayMs = 600) => {
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.ok || res.status < 500 || attempt === retries) {
+        return res;
+      }
+      lastError = new Error(`HTTP ${res.status}`);
+    } catch (err) {
+      lastError = err;
+      if (attempt === retries) throw err;
+    }
+    await new Promise((resolve) => setTimeout(resolve, delayMs * (attempt + 1)));
+  }
+  throw lastError;
+};
+
 
 // ─── Product helper: transform raw server product to app shape ────────────────
 export const transformProduct = (item) => {
@@ -74,7 +93,7 @@ export const fetchProductsPage = async ({
   if (gender) params.set("gender", gender);
   if (sort) params.set("sort", sort);
 
-  const res = await fetch(`${API}/products?${params}`);
+  const res = await fetchWithRetry(`${API}/products?${params}`);
   if (!res.ok) throw new Error("Failed to fetch products");
   const data = await res.json();
   return {
@@ -155,7 +174,7 @@ export const getProductById = async (id) => {
 }
 // ─── Categories ───────────────────────────────────────────────────────────────
 export const fetchAllCategories = async () => {
-  const res = await fetch(`${API}/categories`);
+  const res = await fetchWithRetry(`${API}/categories`);
   if (!res.ok) throw new Error("Failed to fetch categories");
   return res.json();
 };

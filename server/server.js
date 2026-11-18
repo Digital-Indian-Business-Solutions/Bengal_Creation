@@ -23,25 +23,37 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
+const normalizeOrigin = (url = "") => url.trim().replace(/\/+$/, "");
+
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map(normalizeOrigin)
+  .filter(Boolean);
 
 // Always allow both www and non-www of the primary domain
 const alwaysAllowed = [
   "https://bengalcreations.in",
   "https://www.bengalcreations.in",
+  "http://bengalcreations.in",
+  "http://www.bengalcreations.in",
 ];
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  const normalized = normalizeOrigin(origin);
+  return (
+    alwaysAllowed.includes(normalized) ||
+    allowedOrigins.includes(normalized) ||
+    normalized.endsWith(".bengalcreations.in") ||
+    normalized.endsWith(".vercel.app") ||
+    normalized.includes("localhost") ||
+    normalized.includes("127.0.0.1")
+  );
+};
 
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin) return cb(null, true);
-    if (
-      alwaysAllowed.includes(origin) ||
-      allowedOrigins.includes(origin) ||
-      origin.endsWith(".bengalcreations.in") ||
-      origin.endsWith(".vercel.app") ||
-      origin.includes("localhost") ||
-      origin.includes("127.0.0.1")
-    ) {
+    if (isAllowedOrigin(origin)) {
       return cb(null, true);
     }
     cb(new Error("Not allowed by CORS: " + origin));
@@ -193,9 +205,10 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error("Server error:", err);
   const origin = req.headers.origin;
-  if (origin && (alwaysAllowed.includes(origin) || allowedOrigins.includes(origin) || origin.endsWith(".bengalcreations.in") || origin.endsWith(".vercel.app") || origin.includes("localhost"))) {
+  if (origin && isAllowedOrigin(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Vary", "Origin");
   }
   res.status(500).json({
     success: false,
