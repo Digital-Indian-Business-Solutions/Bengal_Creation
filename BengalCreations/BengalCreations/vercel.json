@@ -1,6 +1,17 @@
 {
   "redirects": [
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.bengalcreations.in"
+        }
+      ],
+      "destination": "https://bengalcreations.in/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {

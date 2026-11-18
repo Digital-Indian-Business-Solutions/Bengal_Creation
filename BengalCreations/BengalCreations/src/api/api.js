@@ -2,11 +2,12 @@
 export const API = import.meta.env.VITE_API || "http://localhost:5000/api";
 
 // Retry helper for transient cold-start / network failures on read requests
+// Uses cache: "no-store" so browsers don't send stale If-None-Match (304) without CORS headers
 const fetchWithRetry = async (url, options = {}, retries = 2, delayMs = 600) => {
   let lastError;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const res = await fetch(url, options);
+      const res = await fetch(url, { cache: "no-store", ...options });
       if (res.ok || res.status < 500 || attempt === retries) {
         return res;
       }

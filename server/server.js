@@ -22,6 +22,10 @@ const superAdminRoutes = require("./routes/superAdminRoutes");
 const app = express();
 const port = process.env.PORT || 5000;
 
+// Disable ETag so Express never returns 304 Not Modified
+// (Vercel Edge strips Access-Control-Allow-Origin on 304 responses, breaking cross-origin fetches)
+app.set("etag", false);
+
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const normalizeOrigin = (url = "") => url.trim().replace(/\/+$/, "");
 
@@ -60,6 +64,13 @@ app.use(cors({
   },
   credentials: true,
 }));
+
+// Prevent browser/CDN conditional 304 caching on API responses so CORS headers are always sent
+app.use("/api", (req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.vary("Origin");
+  next();
+});
 
 // ── Body parsers ──────────────────────────────────────────────────────────────
 // Webhook raw body must come before express.json()
@@ -208,7 +219,7 @@ app.use((err, req, res, next) => {
   if (origin && isAllowedOrigin(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader("Vary", "Origin");
+    res.vary("Origin");
   }
   res.status(500).json({
     success: false,

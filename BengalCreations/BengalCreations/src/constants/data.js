@@ -15,7 +15,7 @@ export const CATEGORY_TILES = [
   },
   {
     name: "Terracotta Crafts",
-    img: "https://tse2.mm.bing.net/th/id/OIP.MhgWzzb0X1KeS32-GfhZbgHaHa?rs=1&pid=ImgDetMain&o=7&rm=3",
+    img: "https://res.cloudinary.com/dwhrfilpd/image/upload/v1772695245/BengalhandmadeterracottaartifactproductfromPanchmura_Bishnupur_Bankura_WestBengalbyBONGONIKETAN66_lqke17.webp",
   },
   {
     name: "Dokra Art",
@@ -27,7 +27,7 @@ export const CATEGORY_TILES = [
   },
   {
     name: "Jute Products",
-    img: "https://www.taxscan.in/wp-content/uploads/2022/09/Anti-Dumping-Duty-Jute-Products-CBIC-taxscan.jpg",
+    img: "https://res.cloudinary.com/dncmyykoh/image/upload/v1774949803/gul7tmh4h64bobccb88n.jpg",
   },
   {
     name: "Bengal Sweets",
