@@ -13,6 +13,17 @@ import {
   googleLoginVendor,
 } from "../api/api";
 
+const INITIAL_REG = {
+  name: "", email: "", phone: "", password: "",
+  store: "", description: "", address: "",
+  logo: null, banner: null, tradeLicense: null,
+  aadhaarCard: null, panCard: null, otherDoc: null,
+};
+
+const INITIAL_FORM = {
+  address: "", city: "", pin: "", state: "", houseNo: "", landmark: "",
+};
+
 function LoginPage({ onLogin, showToast }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -20,20 +31,15 @@ function LoginPage({ onLogin, showToast }) {
   const [role, setRole] = useState("customer");
   const [authMode, setAuthMode] = useState("signin"); // signin | register | forgot
   const [si, setSi] = useState({ email: "", password: "" });
-  const [reg, setReg] = useState({
-    name: "", email: "", phone: "", password: "",
-    store: "", description: "", address: "",
-    logo: null, banner: null, tradeLicense: null,
-    aadhaarCard: null, panCard: null, otherDoc: null,
-  });
+  const [reg, setReg] = useState(INITIAL_REG);
+  const [regKey, setRegKey] = useState(0);
+  const [vendorApprovalModal, setVendorApprovalModal] = useState(false);
   const [showPwd, setShowPwd] = useState({ si: false, reg: false });
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
 
   const setFile = (name, file) => setReg((r) => ({ ...r, [name]: file }));
-  const [form, setForm] = useState({
-    address: "", city: "", pin: "", state: "", houseNo: "", landmark: "",
-  });
+  const [form, setForm] = useState(INITIAL_FORM);
 
   const addAddress = async ({ user_id }) => {
     try {
@@ -145,6 +151,16 @@ function LoginPage({ onLogin, showToast }) {
       showToast("⚠️ Password must be at least 6 characters");
       return;
     }
+    if (role === "vendor") {
+      if (!reg.store || !reg.address) {
+        showToast("⚠️ Please enter store name and address");
+        return;
+      }
+      if (!reg.tradeLicense || !reg.aadhaarCard || !reg.panCard) {
+        showToast("⚠️ Please upload all required documents (Trade License, Aadhaar, PAN)");
+        return;
+      }
+    }
     try {
       setLoading(true);
       setError("");
@@ -157,8 +173,13 @@ function LoginPage({ onLogin, showToast }) {
         });
         const user_id = data.user._id;
         await addAddress({ user_id });
-        showToast("Customer Registered!");
+        showToast("Customer Registered successfully!");
+        setReg(INITIAL_REG);
+        setForm(INITIAL_FORM);
+        setRegKey((k) => k + 1);
+        setAuthMode("signin");
       } else {
+        const registeredEmail = reg.email;
         const vendorData = {
           name: reg.name,
           shopName: reg.store,
@@ -175,11 +196,18 @@ function LoginPage({ onLogin, showToast }) {
           otherDoc: reg.otherDoc ? await uploadImage(reg.otherDoc) : null,
         };
         await apiRegisterVendor(vendorData);
-        showToast("Vendor Registered! Waiting for approval.");
-        setAuthMode("signin");
+        // Clear all signup form inputs & files completely
+        setReg(INITIAL_REG);
+        setForm(INITIAL_FORM);
+        setRegKey((k) => k + 1);
+        // Pre-fill email in signin field for ease of login once approved
+        setSi((s) => ({ ...s, email: registeredEmail, password: "" }));
+        // Open the full-page approval notice popup
+        setVendorApprovalModal(true);
       }
     } catch (err) {
       setError(err.message);
+      showToast(`❌ ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -341,7 +369,7 @@ function LoginPage({ onLogin, showToast }) {
 
           {/* ── Register ── */}
           {authMode === "register" && (
-            <div>
+            <div key={regKey}>
               <h3>Create account</h3>
               <p>Join Bengal Creations as a {role}</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
@@ -451,6 +479,113 @@ function LoginPage({ onLogin, showToast }) {
           </button>
         </div>
       </div>
+
+      {/* ── Vendor Approval Overlay Modal ── */}
+      {vendorApprovalModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(20, 10, 12, 0.78)",
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 99999,
+            padding: 20,
+          }}
+          onClick={() => {
+            setVendorApprovalModal(false);
+            setRole("vendor");
+            setAuthMode("signin");
+          }}
+        >
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: 20,
+              padding: "36px 30px",
+              maxWidth: 480,
+              width: "100%",
+              boxShadow: "0 25px 70px rgba(0, 0, 0, 0.35)",
+              textAlign: "center",
+              border: "1px solid rgba(200, 146, 42, 0.25)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: "50%",
+                background: "#fdf8f0",
+                border: "2px solid #e5b84a",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 18px",
+                fontSize: 34,
+              }}
+            >
+              ⏳
+            </div>
+            <h3
+              style={{
+                color: "#7a1c2e",
+                fontSize: 22,
+                fontWeight: 800,
+                margin: "0 0 12px",
+                fontFamily: "'Playfair Display', serif",
+              }}
+            >
+              Account Under Review
+            </h3>
+            <div
+              style={{
+                background: "#fffaf0",
+                border: "1px solid #fae3b4",
+                borderRadius: 12,
+                padding: "16px 18px",
+                color: "#6b5744",
+                fontSize: 14,
+                lineHeight: 1.6,
+                marginBottom: 24,
+                textAlign: "left",
+              }}
+            >
+              <p style={{ margin: "0 0 8px", fontWeight: 700, color: "#7a1c2e", display: "flex", alignItems: "center", gap: 6 }}>
+                <span>📋</span> Waiting for Admin Approval
+              </p>
+              <p style={{ margin: 0, color: "#5a4533" }}>
+                Your vendor account has been created and your documents have been submitted for review.
+              </p>
+              <p style={{ margin: "10px 0 0", fontSize: 13, color: "#8a7056" }}>
+                Please wait until our administrator reviews and permits your account before you can log in.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="login-submit-btn"
+              style={{
+                width: "100%",
+                padding: "14px 20px",
+                fontSize: 15,
+                fontWeight: 700,
+                cursor: "pointer",
+                borderRadius: 10,
+              }}
+              onClick={() => {
+                setVendorApprovalModal(false);
+                setRole("vendor");
+                setAuthMode("signin");
+              }}
+            >
+              OK, Go to Login →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

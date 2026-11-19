@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { uploadImage } from "../utils/cloudinary";
 import { fetchPlatformSettings } from "../api/api";
 import {
@@ -75,6 +76,16 @@ function StatusBadge({ status }) {
 function VendorPage({ currentUser, onShowToast, WB_DISTRICTS, doLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    if (typeof doLogout === "function") {
+      doLogout();
+    } else {
+      logout();
+      navigate("/");
+    }
+  };
 
   /* ─── Derive active tab from URL path ───────────────── */
   const getTabFromPath = useCallback((pathname) => {
@@ -477,6 +488,33 @@ function VendorPage({ currentUser, onShowToast, WB_DISTRICTS, doLogout }) {
           <div className="dp-upgrade-title">Grow Your Business</div>
           <p className="dp-upgrade-desc">Upgrade to premium and get more features.</p>
           <button className="dp-upgrade-btn">⭐ Upgrade Now</button>
+        </div>
+
+        <div style={{ padding: "0 14px 16px" }}>
+          <button
+            type="button"
+            className="dp-logout-btn"
+            onClick={handleLogout}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              padding: "10px 14px",
+              background: "rgba(255, 255, 255, 0.08)",
+              border: "1px solid rgba(255, 255, 255, 0.18)",
+              borderRadius: 10,
+              color: "#f5e4b8",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+          >
+            <span>🚪</span>
+            <span>Logout</span>
+          </button>
         </div>
       </aside>
 

@@ -37,7 +37,7 @@ import { fetchAllProducts, fetchAllCategories } from "./api/api";
 import Footer from "./components/Footer";
 import SuperAdminPage from "./pages/SuperAdminPage";
 import DeliveryPolicy from "./pages/DeliveryPolicy";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
+import PrivacyPolicy from "./pages/SitePrivacy";
 import RefundPolicy from "./pages/RefundPolicy";
 
 // Helper wrapper to redirect logged-in vendors away from customer storefront pages
@@ -236,6 +236,7 @@ export default function App() {
             <DashboardPage
               currentUser={currentUser} onShowToast={showToast}
               emojiOptions={EMOJI_OPTIONS} WB_DISTRICTS={WB_DISTRICTS}
+              doLogout={doLogout}
             />
           </ProtectedRoute>
         } />
