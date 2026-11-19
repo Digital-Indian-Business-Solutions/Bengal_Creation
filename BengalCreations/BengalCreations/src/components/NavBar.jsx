@@ -41,10 +41,7 @@ function Navbar({
       <div className="nav-top">
         <div
           className="nav-logo"
-          onClick={() => {
-            if (currentUser?.role === "vendor") navigate("/dashboard");
-            else navigate("/");
-          }}
+          onClick={() => navigate("/")}
           style={{
             cursor: "pointer",
             display: "flex",
@@ -81,7 +78,7 @@ function Navbar({
                   <div
                     className="user-dropdown-item"
                     onClick={() => {
-                      navigate("/dashboard");
+                      navigate("/vendor");
                       setShowDropdown(false);
                     }}
                   >
@@ -134,13 +131,11 @@ function Navbar({
             )}
           </div>
 
-          {currentUser?.role !== "vendor" && (
-            <button className="nav-btn" onClick={() => navigate("/")}>
-              🏠 Home
-            </button>
-          )}
+          <button className="nav-btn" onClick={() => navigate("/")}>
+            🏠 Home
+          </button>
           {currentUser?.role === "vendor" && (
-            <button className="nav-btn" onClick={() => navigate("/dashboard")}>
+            <button className="nav-btn" onClick={() => navigate("/vendor")}>
               📊 Dashboard
             </button>
           )}

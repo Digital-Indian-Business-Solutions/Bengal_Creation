@@ -21,7 +21,6 @@ import CheckoutPage from "./pages/CheckoutPage";
 import OrdersPage from "./pages/OrdersPage";
 import LoginPage from "./pages/LoginPage";
 import VendorPage from "./pages/VendorPage";
-import DashboardPage from "./pages/DashboardPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -39,14 +38,6 @@ import SuperAdminPage from "./pages/SuperAdminPage";
 import DeliveryPolicy from "./pages/DeliveryPolicy";
 import PrivacyPolicy from "./pages/SitePrivacy";
 import RefundPolicy from "./pages/RefundPolicy";
-
-// Helper wrapper to redirect logged-in vendors away from customer storefront pages
-function NonVendorRoute({ children, currentUser }) {
-  if (currentUser?.role === "vendor") {
-    return <Navigate to="/vendor" replace />;
-  }
-  return children;
-}
 
 export default function App() {
   const navigate = useNavigate();
@@ -131,12 +122,11 @@ export default function App() {
   const isLoginPage = location.pathname === "/login";
   const isResetPage = location.pathname.startsWith("/reset-password");
   const isSuperAdmin = location.pathname.startsWith("/super-admin");
-  const isVendorPage = location.pathname === "/vendor";
-  const isDashboard  = location.pathname.startsWith("/dashboard");
+  const isVendorArea = location.pathname.startsWith("/vendor") || location.pathname.startsWith("/dashboard");
 
   return (
     <div className="bc-app">
-      {!isLoginPage && !isResetPage && !isSuperAdmin && !isVendorPage && !isDashboard && (
+      {!isLoginPage && !isResetPage && !isSuperAdmin && (
         <Navbar
           cart={cart}
           wishlist={wishlist}
@@ -160,48 +150,44 @@ export default function App() {
       <Toast message={toast.msg} visible={toast.visible} />
 
       <Routes>
-        {/* Public / Customer Storefront Routes */}
+        {/* Public / Storefront Routes */}
         <Route path="/" element={
-          <NonVendorRoute currentUser={currentUser}>
-            <HomePage
-              setFilterCategory={setFilterCategory}
-              cart={cart} wishlist={wishlist}
-              onAddCart={addToCart} onToggleWish={toggleWishlist}
-              categoryTiles={CATEGORY_TILES} allProducts={allProducts} loading={loading}
-            />
-          </NonVendorRoute>
+          <HomePage
+            setFilterCategory={setFilterCategory}
+            cart={cart} wishlist={wishlist}
+            onAddCart={addToCart} onToggleWish={toggleWishlist}
+            categoryTiles={CATEGORY_TILES} allProducts={allProducts} loading={loading}
+          />
         } />
         <Route path="/shop" element={
-          <NonVendorRoute currentUser={currentUser}>
-            <ShopPage
-              cart={cart} wishlist={wishlist}
-              onAddCart={addToCart} onToggleWish={toggleWishlist}
-              WB_DISTRICTS={WB_DISTRICTS}
-            />
-          </NonVendorRoute>
+          <ShopPage
+            cart={cart} wishlist={wishlist}
+            onAddCart={addToCart} onToggleWish={toggleWishlist}
+            WB_DISTRICTS={WB_DISTRICTS}
+          />
         } />
         <Route path="/product/:id" element={
-          <NonVendorRoute currentUser={currentUser}>
-            <ProductDetailPage
-              cart={cart} wishlist={wishlist}
-              onAddCart={addToCart} onToggleWish={toggleWishlist}
-              openCart={() => setCartOpen(true)}
-              setFilterCategory={setFilterCategory}
-              allProducts={allProducts}
-            />
-          </NonVendorRoute>
+          <ProductDetailPage
+            cart={cart} wishlist={wishlist}
+            onAddCart={addToCart} onToggleWish={toggleWishlist}
+            openCart={() => setCartOpen(true)}
+            setFilterCategory={setFilterCategory}
+            allProducts={allProducts}
+          />
         } />
-        <Route path="/about" element={<NonVendorRoute currentUser={currentUser}><AboutPage /></NonVendorRoute>} />
-        <Route path="/delivery-policy" element={<NonVendorRoute currentUser={currentUser}><DeliveryPolicy /></NonVendorRoute>} />
-        <Route path="/privacy-policy" element={<NonVendorRoute currentUser={currentUser}><PrivacyPolicy /></NonVendorRoute>} />
-        <Route path="/refund-policy" element={<NonVendorRoute currentUser={currentUser}><RefundPolicy /></NonVendorRoute>} />
-        <Route path="/contact" element={<NonVendorRoute currentUser={currentUser}><ContactPage onShowToast={showToast} /></NonVendorRoute>} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/delivery-policy" element={<DeliveryPolicy />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
+        <Route path="/contact" element={<ContactPage onShowToast={showToast} />} />
         <Route path="/login" element={
           currentUser?.role === "vendor" ? <Navigate to="/vendor" replace /> : <LoginPage onLogin={handleLogin} showToast={showToast} />
         } />
         <Route path="/reset-password/:customerId/:token" element={<ResetPasswordPage showToast={showToast} />} />
         <Route path="/vendor/*" element={
-          <VendorPage currentUser={currentUser} onShowToast={showToast} catOptions={catOptions} WB_DISTRICTS={WB_DISTRICTS} doLogout={doLogout} />
+          <ProtectedRoute role="vendor">
+            <VendorPage currentUser={currentUser} onShowToast={showToast} catOptions={catOptions} WB_DISTRICTS={WB_DISTRICTS} doLogout={doLogout} />
+          </ProtectedRoute>
         } />
         {/* Customer-only */}
         <Route path="/wishlist" element={
@@ -230,22 +216,14 @@ export default function App() {
           </ProtectedRoute>
         } />
 
-        {/* Vendor-only */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute role="vendor">
-            <DashboardPage
-              currentUser={currentUser} onShowToast={showToast}
-              emojiOptions={EMOJI_OPTIONS} WB_DISTRICTS={WB_DISTRICTS}
-              doLogout={doLogout}
-            />
-          </ProtectedRoute>
-        } />
+        {/* Vendor dashboard alias */}
+        <Route path="/dashboard" element={<Navigate to="/vendor" replace />} />
 
         <Route path="/super-admin" element={<SuperAdminPage />} />
-        <Route path="*" element={<Navigate to={currentUser?.role === "vendor" ? "/vendor" : "/"} replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {!isLoginPage && !isResetPage && !isSuperAdmin && !isVendorPage && !isDashboard && <Footer navigate={navigate} />}
+      {!isLoginPage && !isResetPage && !isSuperAdmin && !isVendorArea && <Footer navigate={navigate} />}
 
       {/* Chatbot - only shown to non-vendor users */}
       {currentUser?.role !== "vendor" && !isSuperAdmin && <Chatbot />}

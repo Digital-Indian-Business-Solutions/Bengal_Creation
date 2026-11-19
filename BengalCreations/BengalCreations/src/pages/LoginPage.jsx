@@ -80,7 +80,7 @@ function LoginPage({ onLogin, showToast }) {
         data.vendor.role = "vendor";
         showToast("Vendor Successfully Login");
         onLogin(data.vendor);
-        navigate("/dashboard");
+        navigate("/vendor");
       }
     } catch (err) {
       setError(err.message);
@@ -115,7 +115,7 @@ function LoginPage({ onLogin, showToast }) {
       data.vendor.role = "vendor";
       showToast(`Welcome back, ${data.vendor.name}!`);
       onLogin(data.vendor);
-      navigate("/dashboard");
+      navigate("/vendor");
     } catch (err) {
       setError(err.message);
       showToast(`❌ ${err.message}`);
@@ -156,8 +156,8 @@ function LoginPage({ onLogin, showToast }) {
         showToast("⚠️ Please enter store name and address");
         return;
       }
-      if (!reg.tradeLicense || !reg.aadhaarCard || !reg.panCard) {
-        showToast("⚠️ Please upload all required documents (Trade License, Aadhaar, PAN)");
+      if (!reg.aadhaarCard || !reg.panCard) {
+        showToast("⚠️ Please upload Aadhaar Card and PAN Card (PDF)");
         return;
       }
     }
@@ -190,7 +190,7 @@ function LoginPage({ onLogin, showToast }) {
           address: reg.address,
           logo: await uploadImage(reg.logo),
           banner: await uploadImage(reg.banner),
-          tradeLicense: await uploadImage(reg.tradeLicense),
+          tradeLicense: reg.tradeLicense ? await uploadImage(reg.tradeLicense) : null,
           aadhaarCard: await uploadImage(reg.aadhaarCard),
           panCard: await uploadImage(reg.panCard),
           otherDoc: reg.otherDoc ? await uploadImage(reg.otherDoc) : null,
@@ -446,13 +446,16 @@ function LoginPage({ onLogin, showToast }) {
                 {role === "vendor" && (
                   <>
                     {[
-                      ["tradeLicense", "Trade License Doc (only PDF)", "application/pdf"],
                       ["aadhaarCard", "Aadhaar Card (only PDF)", "application/pdf"],
                       ["panCard", "PAN Card (only PDF)", "application/pdf"],
+                      ["tradeLicense", "Trade License Doc (optional, PDF)", "application/pdf"],
                       ["otherDoc", "Other Document (optional)", "application/pdf,image/*"],
                     ].map(([key, label, accept]) => (
                       <div key={key}>
-                        <label style={lblStyle}>{label}{key !== "otherDoc" && <span className="req"> *</span>}</label>
+                        <label style={lblStyle}>
+                          {label}
+                          {key !== "otherDoc" && key !== "tradeLicense" && <span className="req"> *</span>}
+                        </label>
                         <input className="form-control" type="file" accept={accept} onChange={(e) => setFile(key, e.target.files[0])} />
                       </div>
                     ))}

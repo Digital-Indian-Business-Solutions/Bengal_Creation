@@ -44,7 +44,7 @@ function MobileSideNav({
                 {currentUser.name}
               </p>
               {currentUser.role === "vendor" && (
-                <button onClick={() => goTo("/dashboard")}>
+                <button onClick={() => goTo("/vendor")}>
                   📊 Dashboard
                 </button>
               )}
@@ -75,9 +75,7 @@ function MobileSideNav({
         <hr />
 
         <div className="mobile-links">
-          {currentUser?.role !== "vendor" && (
-            <button onClick={() => goTo("/")}>🏠 Home</button>
-          )}
+          <button onClick={() => goTo("/")}>🏠 Home</button>
           <button onClick={() => goTo("/about")}>ℹ️ About</button>
           <button onClick={() => goTo("/contact")}>📞 Contact</button>
         </div>

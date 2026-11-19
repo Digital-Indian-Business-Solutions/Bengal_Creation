@@ -21,10 +21,10 @@ const vendorSchema = new mongoose.Schema({
     picture: { type: String, default: null },
 
     documents:{
-        tradeLicense:{ type:String, required:true },
+        tradeLicense:{ type:String, default: null },
         aadhaarCard:{ type:String, required:true },
         panCard:{ type:String, required:true },
-        otherDoc:{ type:String }
+        otherDoc:{ type:String, default: null }
     },
 
     products:[{

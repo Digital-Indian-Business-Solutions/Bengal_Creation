@@ -444,12 +444,23 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS, doLogout }) {
 
       {/* ── Sidebar ─────────────────────────────────────── */}
       <aside className={`dp-sidebar ${sidebarOpen ? "dp-sidebar--open" : ""}`}>
-        <div className="dp-sidebar-logo" onClick={() => navigate("/")}>
-          <div className="dp-sidebar-logo-icon">🪷</div>
+        <div className="dp-sidebar-logo" onClick={() => navTo("dashboard")}>
+          <div className="dp-sidebar-logo-icon">🏪</div>
           <div>
-            <div className="dp-sidebar-logo-title">Bengal Creations</div>
-            <div className="dp-sidebar-logo-sub">HERITAGE HANDCRAFTED</div>
+            <div className="dp-sidebar-logo-title">Vendor Portal</div>
+            <div className="dp-sidebar-logo-sub">MERCHANT HUB</div>
           </div>
+          <button
+            type="button"
+            className="dp-sidebar-close"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSidebarOpen(false);
+            }}
+            aria-label="Close sidebar"
+          >
+            ✕
+          </button>
         </div>
 
         <nav className="dp-sidebar-nav">
