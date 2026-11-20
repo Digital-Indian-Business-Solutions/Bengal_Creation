@@ -216,11 +216,43 @@ const approveVendor = async (req, res) => {
     if (!vendor) return res.status(404).json({ msg: "Vendor not found" });
 
     // Notify vendor
-    await sendEmail(
-      vendor.email,
-      "Your vendor account has been approved — Bengal Creations",
-      `<p>Hi ${vendor.name},</p><p>Your vendor account for <b>${vendor.shopName}</b> has been approved. You can now log in and start selling!</p>`
-    ).catch(() => {});
+    const emailSubject = "Welcome to Bengal Creations – Vendor Account Approved!";
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333333; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #ffffff;">
+        <p>Dear <strong>${vendor.name}</strong>,</p>
+
+        <p>Greetings from Bengal Creations!<br/>
+        Welcome to the Bengal Creations family!</p>
+
+        <p>We are pleased to inform you that your vendor registration has been successfully approved. Your shop, <strong>${vendor.shopName}</strong>, is now active on our platform.</p>
+
+        <p>You can now log in to your Vendor Dashboard using the credentials below and start showcasing and selling your products.</p>
+
+        <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px; margin: 20px 0;">
+          <p style="margin: 0 0 8px 0; font-weight: bold; color: #111827;">Login Details:</p>
+          <p style="margin: 0; color: #374151;"><strong>User ID:</strong> ${vendor.email}</p>
+        </div>
+
+        <p>We look forward to a successful and fruitful association with you. Let's work together to take the rich heritage of Bengal to customers across India!</p>
+
+        <p>For any assistance, please feel free to contact us.</p>
+
+        <p style="margin-top: 24px; margin-bottom: 4px;">Thanks and Regards,</p>
+
+        <p style="margin-top: 0; line-height: 1.5; color: #4b5563;">
+          <strong style="color: #7a1c2e; font-size: 16px;">Bengal Creations</strong><br/>
+          A Unit Of DigitalIndian Business Solutions Pvt. Ltd.<br/>
+          Roy’s IT Park, EN-9 (9th Floor), Sector V, Salt Lake, Kolkata – 700 091<br/>
+          Email: <a href="mailto:info@digitalindian.co.in" style="color: #2563eb; text-decoration: none;">info@digitalindian.co.in</a><br/>
+          📞 Phone: +91- 7908735132 / +91 9830640814<br/>
+          🌐 Website: <a href="https://www.bengalcreations.in" target="_blank" style="color: #2563eb; text-decoration: none;">www.bengalcreations.in</a>
+        </p>
+      </div>
+    `;
+
+    await sendEmail(vendor.email, emailSubject, emailHtml).catch((mailErr) => {
+      console.error("⚠️ Error sending vendor approval email:", mailErr.message);
+    });
 
     res.json({ success: true, msg: "Vendor approved", vendor });
   } catch (err) {
